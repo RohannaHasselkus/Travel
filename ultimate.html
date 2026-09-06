@@ -3,1845 +3,234 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>The Ultimate Ranking</title>
-
+<title>My Travel Bucket List</title>
 <style>
-html, body {
-  margin: 0;
-  padding: 0;
-  background: #ffffff;
-}
+  html, body { margin:0; padding:0; background:#fff; }
+  * { box-sizing: border-box; }
+  body { font-family: ui-sans-serif, system-ui, sans-serif; color:#111; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 2rem 1.1rem 3rem; }
+  h1 { font-family: Georgia, 'Times New Roman', serif; font-weight:400; font-size: 30px; letter-spacing:-0.02em; margin:0 0 4px; }
+  .asof { font-size:11px; color:#999; margin-bottom:10px; }
+  .nav { font-size:12.5px; margin-bottom:24px; }
+  .nav a { color:#111; text-decoration:none; border-bottom:1px solid #111; }
+  .nav a:hover { opacity:0.6; }
 
-* {
-  box-sizing: border-box;
-}
+  .chart-row { display:flex; gap:32px; align-items:center; flex-wrap:wrap; margin-bottom:24px; }
+  .chart-row svg { flex-shrink:0; }
+  .legend { display:flex; flex-direction:column; gap:9px; font-size:13.5px; }
+  .legend-item { display:flex; align-items:center; gap:8px; cursor:pointer; padding:4px 8px; border-radius:3px; border:1px solid transparent; }
+  .legend-item:hover { background:#fafafa; }
+  .legend-item.active { border-color:#111; background:#fafafa; }
+  .legend-item.dim { opacity: 0.4; }
+  .swatch { width:12px; height:12px; border-radius:2px; flex-shrink:0; }
+  .legend-count { color:#999; font-size:12px; margin-left:auto; padding-left:16px; }
+  .legend-clear { font-size:11.5px; color:#999; text-decoration:underline; cursor:pointer; margin-top:4px; }
+  .pie-slice { cursor:pointer; transition: opacity 0.15s; }
+  .pie-slice.dim { opacity: 0.25; }
 
-body {
-  font-family: ui-sans-serif, system-ui, sans-serif;
-  color: #151515;
-}
-
-.wrap {
-  max-width: 880px;
-  margin: 0 auto;
-  padding: 2.25rem 1.1rem 3.5rem;
-}
-
-h1 {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-weight: 400;
-  font-size: 32px;
-  letter-spacing: -0.01em;
-  margin: 0 0 6px;
-}
-
-.dek {
-  font-size: 14px;
-  color: #5c5c58;
-  max-width: 60ch;
-  line-height: 1.5;
-  margin-bottom: 22px;
-}
-
-.legend {
-  display: flex;
-  gap: 18px;
-  flex-wrap: wrap;
-  font-size: 12px;
-  color: #5c5c58;
-  margin-bottom: 22px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e5e5e0;
-}
-
-.legend span.dot {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  margin-right: 6px;
-  border-radius: 1px;
-  position: relative;
-  top: 1px;
-}
-
-.weights {
-  border: 1px solid #e5e5e0;
-  padding: 16px 18px;
-  margin-bottom: 24px;
-}
-
-.weights h2 {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 17px;
-  font-weight: 400;
-  margin: 0 0 5px;
-}
-
-.weights p {
-  font-size: 11.5px;
-  line-height: 1.45;
-  color: #666;
-  margin: 0 0 14px;
-}
-
-.weight-layout {
-  display: grid;
-  grid-template-columns: minmax(260px, 1fr) 150px;
-  gap: 22px;
-  align-items: center;
-}
-
-.weight-row {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 8px;
-  align-items: center;
-  margin: 7px 0;
-  font-size: 12px;
-}
-
-.weight-row label {
-  color: #333;
-}
-
-.weight-row input[type="number"] {
-  width: 72px;
-  padding: 6px 7px;
-  border: 1px solid #cfcfc9;
-  border-radius: 0;
-  background: #fff;
-  color: #151515;
-  font: inherit;
-  font-size: 12px;
-  text-align: right;
-}
-
-.weight-row input[type="number"]:focus {
-  outline: none;
-  border-color: #777;
-}
-
-.weight-row .pct {
-  width: auto;
-  color: #5c5c58;
-}
-
-.weight-total {
-  font-size: 11.5px;
-  color: #5c5c58;
-  margin-top: 10px;
-}
-
-.weight-total.warn {
-  color: #9a5a10;
-}
-
-.weight-chart {
-  width: 140px;
-  height: 140px;
-  position: relative;
-  margin: auto;
-}
-
-.weight-chart svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-
-.weight-chart circle {
-  fill: none;
-  stroke-width: 34;
-}
-
-.weight-chart .center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-family: monospace;
-}
-
-.weight-chart .center small {
-  font-family: inherit;
-  font-size: 10px;
-  color: #777;
-}
-
-.controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.search {
-  flex: 1;
-  max-width: 340px;
-}
-
-.search input {
-  width: 100%;
-  border: 1px solid #d7d7d2;
-  padding: 8px 10px;
-  font: inherit;
-  font-size: 12px;
-  outline: none;
-}
-
-.search input:focus {
-  border-color: #999;
-}
-
-.sort {
-  border: 1px solid #d7d7d2;
-  background: white;
-  padding: 8px 10px;
-  font: inherit;
-  font-size: 12px;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table th {
-  text-align: left;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: #777;
-  font-weight: 500;
-  padding: 9px 7px;
-  border-bottom: 1px solid #cfcfc9;
-}
-
-.table td {
-  padding: 10px 7px;
-  border-bottom: 1px solid #ecece8;
-  font-size: 12px;
-  vertical-align: middle;
-}
-
-.table tr:hover td {
-  background: #fafaf8;
-}
-
-.rank {
-  width: 42px;
-  color: #777;
-  font-family: monospace;
-}
-
-.country {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 14px !important;
-}
-
-.continent {
-  color: #777;
-  font-size: 11px !important;
-}
-
-.score {
-  font-family: monospace;
-  font-size: 12px !important;
-  text-align: right;
-}
-
-.bar-wrap {
-  width: 100%;
-  min-width: 80px;
-}
-
-.bar {
-  height: 5px;
-  background: #e8e8e3;
-  position: relative;
-}
-
-.bar-fill {
-  height: 100%;
-}
-
-.desire-fill {
-  background: #a67c1b;
-}
-
-.safety-fill {
-  background: #1f4b3f;
-}
-
-.ethics-fill {
-  background: #2c3e63;
-}
-
-.overall-fill {
-  background: #151515;
-}
-
-.detail {
-  display: none;
-}
-
-.detail.open {
-  display: table-row;
-}
-
-.detail-inner {
-  padding: 10px 12px 14px 49px;
-  background: #fafaf8;
-  border-bottom: 1px solid #e5e5e0;
-}
-
-.detail-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-.detail-card {
-  border-left: 2px solid #ddd;
-  padding-left: 10px;
-}
-
-.detail-card h3 {
-  margin: 0 0 4px;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  color: #777;
-  font-weight: 500;
-}
-
-.detail-card .big {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 19px;
-}
-
-.detail-card p {
-  margin: 4px 0 0;
-  font-size: 10.5px;
-  color: #666;
-  line-height: 1.4;
-}
-
-button.country-button {
-  border: 0;
-  padding: 0;
-  margin: 0;
-  background: transparent;
-  font: inherit;
-  cursor: pointer;
-  text-align: left;
-}
-
-button.country-button:hover {
-  text-decoration: underline;
-}
-
-.note {
-  font-size: 10.5px;
-  color: #777;
-  line-height: 1.45;
-  margin-top: 18px;
-}
-
-.error {
-  border: 1px solid #d7c4aa;
-  background: #fcf8f1;
-  padding: 12px 14px;
-  font-size: 12px;
-  color: #704b20;
-  margin-bottom: 16px;
-}
-
-.empty {
-  padding: 30px 10px;
-  text-align: center;
-  color: #777;
-  font-size: 12px;
-}
-
-@media (max-width: 700px) {
-  .table th:nth-child(3),
-  .table td:nth-child(3) {
-    display: none;
+  table { width:100%; border-collapse: collapse; font-size:13.5px; }
+  th, td { text-align:left; padding:7px 5px; border-bottom:1px solid #eee; }
+  th { font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em; color:#666; border-bottom:2px solid #111; white-space:nowrap; }
+  .country-name { font-weight:600; }
+  .continent-tag { font-size:9.5px; color:#999; }
+  .score-bar-wrap { display:flex; align-items:center; gap:5px; }
+  .score-bar { height:6px; width:44px; background:#eee; position:relative; flex-shrink:0; }
+  .score-bar > div { height:100%; background:#111; }
+  .na { color:#bbb; }
+  .tier-tag { font-size:10px; padding:2px 6px; border-radius:10px; color:#fff; white-space:nowrap; }
+  .empty { text-align:center; color:#999; padding:2rem 0; }
+  .footnote { font-size:10.5px; color:#aaa; margin-top:20px; line-height:1.5; }
+  @media (max-width: 640px) {
+    th, td { padding:5px 3px; font-size:11.5px; }
+    .chart-row { flex-direction:column; align-items:flex-start; }
   }
-
-  .detail-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .controls {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .search {
-    max-width: none;
-  }
-}
-
-@media (max-width: 600px) {
-  .weight-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .weight-chart {
-    width: 120px;
-    height: 120px;
-  }
-}
 </style>
 </head>
-
 <body>
-
-<div class="wrap">
-
-  <h1>The Ultimate Ranking</h1>
-
-  <div class="dek">
-    A combined ranking of countries based on how much I want to visit them,
-    how safe they are for me to visit, and their ethical conditions.
-    The weights below determine how much each component contributes.
-  </div>
-
-  <div class="legend">
-    <span>
-      <span class="dot" style="background:#a67c1b;"></span>
-      Desire
-    </span>
-
-    <span>
-      <span class="dot" style="background:#1f4b3f;"></span>
-      Safety
-    </span>
-
-    <span>
-      <span class="dot" style="background:#2c3e63;"></span>
-      Ethics
-    </span>
-
-    <span>
-      <span class="dot" style="background:#151515;"></span>
-      Overall
-    </span>
-  </div>
-
-  <div id="root"></div>
-
-</div>
-
-<!--
-  IMPORTANT:
-  Keep safety-data.js in the SAME folder as ultimate.html.
-  It contains the shared safety/ethics dataset used by both pages.
--->
-<script src="safety-data.js"></script>
-
+<div id="root"></div>
+<script src="data.js"></script>
 <script>
-const STORAGE_KEY = "bucket-list:data";
-
-let bucket = {};
-let bucketLoaded = false;
-let bucketError = false;
-
-const state = {
-  wDesire: 40,
-  wSafety: 35,
-  wEthics: 25,
-  search: "",
-  sort: "overall"
+const el = (tag, attrs, ...children) => {
+  const e = document.createElement(tag);
+  if (attrs) for (const k in attrs) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else if (k === 'ns') { /* skip */ }
+    else e.setAttribute(k, attrs[k]);
+  }
+  children.flat().forEach(c => {
+    if (c === null || c === undefined) return;
+    e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  });
+  return e;
+};
+const svgEl = (tag, attrs, ...children) => {
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  if (attrs) for (const k in attrs) {
+    if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  children.flat().forEach(c => { if (c) e.appendChild(c); });
+  return e;
 };
 
-const root = document.getElementById("root");
+const TIER_ORDER = ['Safe', 'Moderate', 'Risky', 'Unrated'];
 
-const DATA = window.SAFETY_DATA || {};
+let state = { activeTier: null }; // null = show all
 
-function el(tag, attrs = {}, ...children) {
-  const node = document.createElement(tag);
-
-  Object.entries(attrs).forEach(([key, value]) => {
-    if (key === "class") {
-      node.className = value;
-    } else if (key === "text") {
-      node.textContent = value;
-    } else if (key === "html") {
-      node.innerHTML = value;
-    } else {
-      node.setAttribute(key, value);
-    }
-  });
-
-  children.flat().forEach(child => {
-    if (child == null) return;
-
-    if (typeof child === "string") {
-      node.appendChild(document.createTextNode(child));
-    } else {
-      node.appendChild(child);
-    }
-  });
-
-  return node;
+function getBucketRows() {
+  return window.computeTravelRows()
+    .filter(r => window.TRAVEL_DATA[r.name].bucketList)
+    .map(r => ({ ...r, tier: window.safetyTier(r.safety) }));
 }
 
+function fmt(n) { return n == null ? null : Math.round(n); }
 
-/* =========================================================
-   BUCKET LIST DATA
-   ========================================================= */
-
-async function loadBucket() {
-  try {
-    const raw = localStorage.getItem("personal:" + STORAGE_KEY);
-
-    bucket = raw ? JSON.parse(raw) : {};
-
-    bucketError = false;
-  } catch (e) {
-    bucket = {};
-    bucketError = true;
-  }
-
-  bucketLoaded = true;
-
-  render();
+function scoreBar(val) {
+  const wrap = el('div', {class:'score-bar-wrap'});
+  if (val == null) { wrap.appendChild(el('span',{class:'na'},'—')); return wrap; }
+  const bar = el('div', {class:'score-bar'});
+  const fill = el('div', {});
+  fill.style.width = Math.max(2, val) + '%';
+  bar.appendChild(fill);
+  wrap.appendChild(bar);
+  wrap.appendChild(el('span',{}, String(fmt(val))));
+  return wrap;
 }
 
+// Build an SVG donut chart. Clicking a slice or its legend row filters the table.
+function buildChart(rows) {
+  const counts = {};
+  TIER_ORDER.forEach(t => counts[t] = 0);
+  rows.forEach(r => counts[r.tier]++);
+  const total = rows.length;
 
-window.addEventListener("storage", function(e) {
-  if (e.key === "personal:" + STORAGE_KEY) {
-    loadBucket();
+  const size = 220, cx = size/2, cy = size/2, rOuter = 100, rInner = 55;
+
+  const svg = svgEl('svg', {width: size, height: size, viewBox: `0 0 ${size} ${size}`});
+
+  if (total === 0) {
+    svg.appendChild(svgEl('circle', {cx, cy, r: rOuter, fill:'#f2f2f2'}));
+    svg.appendChild(svgEl('circle', {cx, cy, r: rInner, fill:'#fff'}));
+  } else {
+    let angleStart = -Math.PI/2;
+    TIER_ORDER.forEach(tier => {
+      const count = counts[tier];
+      if (count === 0) return;
+      const angleSlice = (count/total) * Math.PI * 2;
+      const angleEnd = angleStart + angleSlice;
+      const largeArc = angleSlice > Math.PI ? 1 : 0;
+
+      const x1o = cx + rOuter*Math.cos(angleStart), y1o = cy + rOuter*Math.sin(angleStart);
+      const x2o = cx + rOuter*Math.cos(angleEnd), y2o = cy + rOuter*Math.sin(angleEnd);
+      const x1i = cx + rInner*Math.cos(angleEnd), y1i = cy + rInner*Math.sin(angleEnd);
+      const x2i = cx + rInner*Math.cos(angleStart), y2i = cy + rInner*Math.sin(angleStart);
+
+      const d = `M ${x1o} ${y1o} A ${rOuter} ${rOuter} 0 ${largeArc} 1 ${x2o} ${y2o}
+                 L ${x1i} ${y1i} A ${rInner} ${rInner} 0 ${largeArc} 0 ${x2i} ${y2i} Z`;
+
+      const dim = state.activeTier && state.activeTier !== tier;
+      const path = svgEl('path', {
+        d, fill: window.TIER_COLORS[tier],
+        class: 'pie-slice' + (dim ? ' dim' : ''),
+        onclick: () => { state.activeTier = state.activeTier === tier ? null : tier; render(); }
+      });
+      const titleEl = document.createElementNS('http://www.w3.org/2000/svg','title');
+      titleEl.textContent = `${tier}: ${count}`;
+      path.appendChild(titleEl);
+      svg.appendChild(path);
+
+      angleStart = angleEnd;
+    });
   }
-});
 
+  const centerText = svgEl('text', {x: cx, y: cy-4, 'text-anchor':'middle', 'font-size':'22', 'font-weight':'600', fill:'#111'}, );
+  centerText.textContent = String(total);
+  svg.appendChild(centerText);
+  const centerLabel = svgEl('text', {x: cx, y: cy+14, 'text-anchor':'middle', 'font-size':'10', fill:'#999'});
+  centerLabel.textContent = total === 1 ? 'country' : 'countries';
+  svg.appendChild(centerLabel);
 
-/* =========================================================
-   DESIRE SCORE
-   ========================================================= */
-
-function computeDesire() {
-  const raw = {};
-
-  Object.entries(bucket).forEach(([name, entry]) => {
-    const landmarks = entry && Array.isArray(entry.landmarks)
-      ? entry.landmarks
-      : [];
-
-    const active = landmarks.filter(l => !l.visited);
-
-    raw[name] = {
-      score: active.reduce(
-        (sum, landmark) => sum + (Number(landmark.rating) || 0),
-        0
-      ),
-
-      total: landmarks.length,
-
-      visited: landmarks.length - active.length,
-
-      landmarks
-    };
-  });
-
-  return raw;
+  return { svg, counts };
 }
-
-
-/*
-  Desire is based ONLY on unvisited landmarks.
-
-  This means:
-  - adding a landmark increases desire
-  - giving a landmark a higher rating increases desire
-  - marking a landmark visited removes its rating from desire
-*/
-function desireScoreForCountry(desire, country) {
-  if (!desire[country]) {
-    return 0;
-  }
-
-  return Number(desire[country].score) || 0;
-}
-
-
-/* =========================================================
-   SAFETY SCORE
-   ========================================================= */
-
-function calculateSafety(d) {
-
-  if (!d) {
-    return null;
-  }
-
-  let gpiScore = null;
-
-  if (d.gpi != null) {
-    const clamped = Math.max(
-      1.1,
-      Math.min(3.4, Number(d.gpi))
-    );
-
-    gpiScore =
-      100 -
-      ((clamped - 1.1) / (3.4 - 1.1)) * 100;
-  }
-
-
-  let wpsScore = null;
-
-  if (d.wps != null) {
-    wpsScore = Number(d.wps) * 100;
-  }
-
-
-  /*
-    Travel-advisory penalties.
-
-    These are deliberately subtracted from the underlying
-    GPI/WPS safety score.
-  */
-
-  let penalty = 0;
-
-  if (d.us === "L4") {
-    penalty += 35;
-  } else if (d.us === "L3") {
-    penalty += 14;
-  }
-
-  if (d.uk === "ALL") {
-    penalty += 25;
-  } else if (d.uk === "ESS") {
-    penalty += 10;
-  }
-
-  if (d.es === "ALL") {
-    penalty += 20;
-  }
-
-
-  let base = null;
-  let weightSum = 0;
-  let weighted = 0;
-
-
-  if (gpiScore != null && Number.isFinite(gpiScore)) {
-    weighted += gpiScore * 0.55;
-    weightSum += 0.55;
-  }
-
-
-  if (wpsScore != null && Number.isFinite(wpsScore)) {
-    weighted += wpsScore * 0.45;
-    weightSum += 0.45;
-  }
-
-
-  if (weightSum > 0) {
-    base = weighted / weightSum;
-  }
-
-
-  let safety = null;
-
-  if (base != null) {
-    safety = Math.max(0, base - penalty);
-  } else if (penalty > 0) {
-    safety = Math.max(0, 45 - penalty);
-  }
-
-
-  return safety;
-}
-
-
-/* =========================================================
-   ETHICS SCORE
-   ========================================================= */
-
-function ethicsScoreForCountry(d) {
-  if (!d || d.fh == null) {
-    return null;
-  }
-
-  return Number(d.fh);
-}
-
-
-/* =========================================================
-   FINAL RANKING
-   ========================================================= */
-
-function calculateOverall(desire, safety, ethics) {
-
-  const parts = [];
-
-  if (desire != null && Number.isFinite(desire)) {
-    parts.push([
-      desire,
-      Number(state.wDesire) || 0
-    ]);
-  }
-
-  if (safety != null && Number.isFinite(safety)) {
-    parts.push([
-      safety,
-      Number(state.wSafety) || 0
-    ]);
-  }
-
-  if (ethics != null && Number.isFinite(ethics)) {
-    parts.push([
-      ethics,
-      Number(state.wEthics) || 0
-    ]);
-  }
-
-
-  const weightSum = parts.reduce(
-    (sum, part) => sum + part[1],
-    0
-  );
-
-
-  if (weightSum <= 0) {
-    return null;
-  }
-
-
-  return (
-    parts.reduce(
-      (sum, part) => sum + part[0] * part[1],
-      0
-    ) / weightSum
-  );
-}
-
-
-/* =========================================================
-   COUNTRY LIST
-   ========================================================= */
-
-function getCountries() {
-
-  const names = new Set();
-
-  Object.keys(DATA).forEach(name => {
-    names.add(name);
-  });
-
-  Object.keys(bucket).forEach(name => {
-    names.add(name);
-  });
-
-  return Array.from(names);
-}
-
-
-/* =========================================================
-   WEIGHT CONTROLS
-   ========================================================= */
-
-function buildWeightPanel() {
-
-  const wpanel = el("div", {
-    class: "weights"
-  });
-
-  wpanel.appendChild(
-    el(
-      "h2",
-      {},
-      "Ranking weights"
-    )
-  );
-
-  wpanel.appendChild(
-    el(
-      "p",
-      {},
-      "Enter the percentage you want to give each component. "
-      + "The values are normalized automatically if they do not add up to exactly 100%."
-    )
-  );
-
-
-  const weightLayout = el(
-    "div",
-    {
-      class: "weight-layout"
-    }
-  );
-
-
-  const weightFields = {};
-
-
-  const mkWeightInput = (label, key) => {
-
-    const row = el(
-      "div",
-      {
-        class: "weight-row"
-      }
-    );
-
-
-    row.appendChild(
-      el(
-        "label",
-        {},
-        label
-      )
-    );
-
-
-    const input = el(
-      "input",
-      {
-        type: "number",
-        min: "0",
-        max: "100",
-        step: "1",
-        value: String(state[key]),
-        "aria-label": label + " percentage"
-      }
-    );
-
-
-    input.addEventListener(
-      "input",
-      e => {
-
-        let value = Number(e.target.value);
-
-        if (!Number.isFinite(value)) {
-          return;
-        }
-
-        value = Math.max(
-          0,
-          Math.min(100, value)
-        );
-
-        state[key] = value;
-
-        e.target.value = value;
-
-        render();
-      }
-    );
-
-
-    row.appendChild(input);
-
-
-    row.appendChild(
-      el(
-        "span",
-        {
-          class: "pct"
-        },
-        "%"
-      )
-    );
-
-
-    weightFields[key] = input;
-
-
-    return row;
-  };
-
-
-  const fieldWrap = el("div", {});
-
-
-  fieldWrap.appendChild(
-    mkWeightInput(
-      "Desire",
-      "wDesire"
-    )
-  );
-
-
-  fieldWrap.appendChild(
-    mkWeightInput(
-      "Safety",
-      "wSafety"
-    )
-  );
-
-
-  fieldWrap.appendChild(
-    mkWeightInput(
-      "Ethics",
-      "wEthics"
-    )
-  );
-
-
-  weightLayout.appendChild(fieldWrap);
-
-
-  /* =======================================================
-     DONUT CHART
-     ======================================================= */
-
-  const chartWrap = el(
-    "div",
-    {
-      class: "weight-chart",
-      title: "Weight proportions"
-    }
-  );
-
-
-  const svgNS = "http://www.w3.org/2000/svg";
-
-
-  const svg = document.createElementNS(
-    svgNS,
-    "svg"
-  );
-
-
-  svg.setAttribute(
-    "viewBox",
-    "0 0 120 120"
-  );
-
-
-  const bg = document.createElementNS(
-    svgNS,
-    "circle"
-  );
-
-
-  bg.setAttribute("cx", "60");
-  bg.setAttribute("cy", "60");
-  bg.setAttribute("r", "43");
-  bg.setAttribute("stroke", "#eeeeea");
-
-
-  svg.appendChild(bg);
-
-
-  const slices = {};
-
-
-  [
-    ["wDesire", "#a67c1b"],
-    ["wSafety", "#1f4b3f"],
-    ["wEthics", "#2c3e63"]
-  ].forEach(
-    ([key, color]) => {
-
-      const c =
-        document.createElementNS(
-          svgNS,
-          "circle"
-        );
-
-      c.setAttribute("cx", "60");
-      c.setAttribute("cy", "60");
-      c.setAttribute("r", "43");
-      c.setAttribute("stroke", color);
-
-      slices[key] = c;
-
-      svg.appendChild(c);
-    }
-  );
-
-
-  chartWrap.appendChild(svg);
-
-
-  chartWrap.appendChild(
-    el(
-      "div",
-      {
-        class: "center"
-      },
-      el(
-        "span",
-        {},
-        "100%"
-      ),
-      el(
-        "small",
-        {},
-        "normalized"
-      )
-    )
-  );
-
-
-  weightLayout.appendChild(chartWrap);
-
-  wpanel.appendChild(weightLayout);
-
-
-  const totalLabel = el(
-    "div",
-    {
-      class: "weight-total"
-    }
-  );
-
-
-  wpanel.appendChild(totalLabel);
-
-
-  function updateWeightChart() {
-
-    const total =
-      Number(state.wDesire) +
-      Number(state.wSafety) +
-      Number(state.wEthics);
-
-
-    let offset = 0;
-
-
-    const circ =
-      2 * Math.PI * 43;
-
-
-    [
-      ["wDesire"],
-      ["wSafety"],
-      ["wEthics"]
-    ].forEach(
-      ([key]) => {
-
-        const pct =
-          total
-            ? state[key] / total
-            : 0;
-
-
-        const c = slices[key];
-
-
-        c.setAttribute(
-          "stroke-dasharray",
-          `${pct * circ} ${circ}`
-        );
-
-
-        c.setAttribute(
-          "stroke-dashoffset",
-          `${-offset * circ}`
-        );
-
-
-        offset += pct;
-      }
-    );
-
-
-    totalLabel.textContent =
-      `Total: ${total}%${
-        total === 100
-          ? ""
-          : " — values are normalized in the ranking"
-      }`;
-
-
-    totalLabel.className =
-      "weight-total" +
-      (
-        total === 100
-          ? ""
-          : " warn"
-      );
-  }
-
-
-  updateWeightChart();
-
-
-  return wpanel;
-}
-
-
-/* =========================================================
-   CONTROLS
-   ========================================================= */
-
-function buildControls() {
-
-  const controls = el(
-    "div",
-    {
-      class: "controls"
-    }
-  );
-
-
-  const searchWrap = el(
-    "div",
-    {
-      class: "search"
-    }
-  );
-
-
-  const searchInput = el(
-    "input",
-    {
-      type: "search",
-      placeholder: "Search countries...",
-      value: state.search,
-      "aria-label": "Search countries"
-    }
-  );
-
-
-  searchInput.addEventListener(
-    "input",
-    e => {
-
-      state.search = e.target.value;
-
-      render();
-    }
-  );
-
-
-  searchWrap.appendChild(searchInput);
-
-
-  const sort = el(
-    "select",
-    {
-      class: "sort",
-      "aria-label": "Sort ranking"
-    }
-  );
-
-
-  [
-    ["overall", "Overall ranking"],
-    ["desire", "Desire"],
-    ["safety", "Safety"],
-    ["ethics", "Ethics"],
-    ["alphabetical", "Alphabetical"]
-  ].forEach(
-    ([value, label]) => {
-
-      const option = el(
-        "option",
-        {
-          value
-        },
-        label
-      );
-
-      if (state.sort === value) {
-        option.selected = true;
-      }
-
-      sort.appendChild(option);
-    }
-  );
-
-
-  sort.addEventListener(
-    "change",
-    e => {
-
-      state.sort = e.target.value;
-
-      render();
-    }
-  );
-
-
-  controls.appendChild(searchWrap);
-  controls.appendChild(sort);
-
-
-  return controls;
-}
-
-
-/* =========================================================
-   FORMATTERS
-   ========================================================= */
-
-function formatScore(value) {
-
-  if (value == null || !Number.isFinite(value)) {
-    return "—";
-  }
-
-  return Number(value).toFixed(1);
-}
-
-
-function clampPercent(value) {
-
-  if (value == null || !Number.isFinite(value)) {
-    return 0;
-  }
-
-  return Math.max(
-    0,
-    Math.min(100, value)
-  );
-}
-
-
-/* =========================================================
-   DETAIL ROW
-   ========================================================= */
-
-function makeDetailRow(item) {
-
-  const tr = el(
-    "tr",
-    {
-      class: "detail"
-    }
-  );
-
-
-  const td = el(
-    "td",
-    {
-      colspan: "6"
-    }
-  );
-
-
-  const inner = el(
-    "div",
-    {
-      class: "detail-inner"
-    }
-  );
-
-
-  const grid = el(
-    "div",
-    {
-      class: "detail-grid"
-    }
-  );
-
-
-  const desireCard = el(
-    "div",
-    {
-      class: "detail-card"
-    }
-  );
-
-
-  desireCard.appendChild(
-    el(
-      "h3",
-      {},
-      "Desire"
-    )
-  );
-
-
-  desireCard.appendChild(
-    el(
-      "div",
-      {
-        class: "big"
-      },
-      formatScore(item.desire)
-    )
-  );
-
-
-  const landmarkText =
-    item.totalLandmarks > 0
-      ? `${item.totalLandmarks} landmark${
-          item.totalLandmarks === 1
-            ? ""
-            : "s"
-        } listed; ${item.visitedLandmarks} visited`
-      : "No landmarks currently in the bucket list";
-
-
-  desireCard.appendChild(
-    el(
-      "p",
-      {},
-      landmarkText
-    )
-  );
-
-
-  const safetyCard = el(
-    "div",
-    {
-      class: "detail-card"
-    }
-  );
-
-
-  safetyCard.appendChild(
-    el(
-      "h3",
-      {},
-      "Safety"
-    )
-  );
-
-
-  safetyCard.appendChild(
-    el(
-      "div",
-      {
-        class: "big"
-      },
-      formatScore(item.safety)
-    )
-  );
-
-
-  safetyCard.appendChild(
-    el(
-      "p",
-      {},
-      "Combined GPI, WPS, and travel-advisory score."
-    )
-  );
-
-
-  const ethicsCard = el(
-    "div",
-    {
-      class: "detail-card"
-    }
-  );
-
-
-  ethicsCard.appendChild(
-    el(
-      "h3",
-      {},
-      "Ethics"
-    )
-  );
-
-
-  ethicsCard.appendChild(
-    el(
-      "div",
-      {
-        class: "big"
-      },
-      formatScore(item.ethics)
-    )
-  );
-
-
-  ethicsCard.appendChild(
-    el(
-      "p",
-      {},
-      "Freedom House score."
-    )
-  );
-
-
-  grid.appendChild(desireCard);
-  grid.appendChild(safetyCard);
-  grid.appendChild(ethicsCard);
-
-
-  inner.appendChild(grid);
-
-  td.appendChild(inner);
-
-  tr.appendChild(td);
-
-
-  return tr;
-}
-
-
-/* =========================================================
-   RANKING TABLE
-   ========================================================= */
-
-function buildTable(items) {
-
-  const table = el(
-    "table",
-    {
-      class: "table"
-    }
-  );
-
-
-  const thead = el("thead");
-
-
-  const headerRow = el("tr");
-
-
-  [
-    ["#", "rank"],
-    ["Country", "country"],
-    ["Continent", "continent"],
-    ["Overall", "score"],
-    ["Score", "score"],
-    ["", ""]
-  ].forEach(
-    ([label, cls]) => {
-
-      headerRow.appendChild(
-        el(
-          "th",
-          {
-            class: cls
-          },
-          label
-        )
-      );
-    }
-  );
-
-
-  thead.appendChild(headerRow);
-
-  table.appendChild(thead);
-
-
-  const tbody = el("tbody");
-
-
-  if (items.length === 0) {
-
-    const row = el("tr");
-
-    const cell = el(
-      "td",
-      {
-        colspan: "6",
-        class: "empty"
-      },
-      "No countries match your search."
-    );
-
-    row.appendChild(cell);
-
-    tbody.appendChild(row);
-
-    table.appendChild(tbody);
-
-    return table;
-  }
-
-
-  items.forEach(
-    (item, index) => {
-
-      const row = el("tr");
-
-
-      const rankCell = el(
-        "td",
-        {
-          class: "rank"
-        },
-        String(index + 1)
-      );
-
-
-      const countryCell = el(
-        "td",
-        {
-          class: "country"
-        }
-      );
-
-
-      const countryButton = el(
-        "button",
-        {
-          class: "country-button",
-          type: "button"
-        },
-        item.country
-      );
-
-
-      countryCell.appendChild(countryButton);
-
-
-      const continentCell = el(
-        "td",
-        {
-          class: "continent"
-        },
-        item.continent || "—"
-      );
-
-
-      const overallCell = el(
-        "td",
-        {
-          class: "score"
-        },
-        formatScore(item.overall)
-      );
-
-
-      const barCell = el(
-        "td",
-        {
-          class: "score"
-        }
-      );
-
-
-      const barWrap = el(
-        "div",
-        {
-          class: "bar-wrap"
-        }
-      );
-
-
-      const bar = el(
-        "div",
-        {
-          class: "bar"
-        }
-      );
-
-
-      const fill = el(
-        "div",
-        {
-          class: "bar-fill overall-fill"
-        }
-      );
-
-
-      fill.style.width =
-        clampPercent(item.overall) + "%";
-
-
-      bar.appendChild(fill);
-
-      barWrap.appendChild(bar);
-
-      barCell.appendChild(barWrap);
-
-
-      const actionCell = el(
-        "td",
-        {
-          class: "score"
-        }
-      );
-
-
-      const detailButton = el(
-        "button",
-        {
-          type: "button",
-          title: "Show details"
-        },
-        "＋"
-      );
-
-
-      actionCell.appendChild(detailButton);
-
-
-      row.appendChild(rankCell);
-      row.appendChild(countryCell);
-      row.appendChild(continentCell);
-      row.appendChild(overallCell);
-      row.appendChild(barCell);
-      row.appendChild(actionCell);
-
-
-      const detailRow =
-        makeDetailRow(item);
-
-
-      function toggleDetail() {
-
-        detailRow.classList.toggle("open");
-
-        detailButton.textContent =
-          detailRow.classList.contains("open")
-            ? "−"
-            : "＋";
-      }
-
-
-      countryButton.addEventListener(
-        "click",
-        toggleDetail
-      );
-
-
-      detailButton.addEventListener(
-        "click",
-        toggleDetail
-      );
-
-
-      tbody.appendChild(row);
-
-      tbody.appendChild(detailRow);
-    }
-  );
-
-
-  table.appendChild(tbody);
-
-
-  return table;
-}
-
-
-/* =========================================================
-   MAIN RENDER
-   ========================================================= */
 
 function render() {
+  const root = document.getElementById('root');
+  root.innerHTML = '';
+  const wrap = el('div', {class:'wrap'});
 
-  root.innerHTML = "";
+  wrap.appendChild(el('h1', {}, "My Travel Bucket List"));
+  wrap.appendChild(el('div', {class:'asof'}, "Pulled live from data.js — mark a country's \"bucketList\" as true there (or star it on the safety page) to add it here."));
+  wrap.appendChild(el('div', {class:'nav'}, el('a', {href:'safety.html'}, "← Back to full safety & ethics rankings")));
 
+  const rows = getBucketRows();
+  const { svg, counts } = buildChart(rows);
 
-  if (!bucketLoaded) {
+  const chartRow = el('div', {class:'chart-row'});
+  chartRow.appendChild(svg);
 
-    root.appendChild(
-      el(
-        "div",
-        {
-          class: "empty"
-        },
-        "Loading..."
-      )
-    );
-
-    return;
-  }
-
-
-  if (bucketError) {
-
-    root.appendChild(
-      el(
-        "div",
-        {
-          class: "error"
-        },
-        "The bucket list could not be read from local storage. "
-        + "The ranking is still displaying the safety and ethics data, "
-        + "but Desire will be unavailable until the bucket list can be read."
-      )
-    );
-  }
-
-
-  root.appendChild(
-    buildWeightPanel()
-  );
-
-
-  root.appendChild(
-    buildControls()
-  );
-
-
-  const desire = computeDesire();
-
-
-  const countries =
-    getCountries();
-
-
-  const items = countries.map(
-    country => {
-
-      const safetyData =
-        DATA[country] || null;
-
-
-      const desireInfo =
-        desire[country] || {
-          score: 0,
-          total: 0,
-          visited: 0,
-          landmarks: []
-        };
-
-
-      const desireScore =
-        desireScoreForCountry(
-          desire,
-          country
-        );
-
-
-      const safety =
-        calculateSafety(
-          safetyData
-        );
-
-
-      const ethics =
-        ethicsScoreForCountry(
-          safetyData
-        );
-
-
-      const overall =
-        calculateOverall(
-          desireScore,
-          safety,
-          ethics
-        );
-
-
-      return {
-        country,
-
-        continent:
-          safetyData
-            ? safetyData.continent
-            : "",
-
-        desire:
-          desireScore,
-
-        safety,
-
-        ethics,
-
-        overall,
-
-        totalLandmarks:
-          desireInfo.total,
-
-        visitedLandmarks:
-          desireInfo.visited,
-
-        landmarks:
-          desireInfo.landmarks,
-
-        data:
-          safetyData
-      };
-    }
-  );
-
-
-  const filtered =
-    items.filter(
-      item => {
-
-        if (!state.search.trim()) {
-          return true;
-        }
-
-        return item.country
-          .toLowerCase()
-          .includes(
-            state.search
-              .trim()
-              .toLowerCase()
-          );
-      }
-    );
-
-
-  filtered.sort(
-    (a, b) => {
-
-      if (state.sort === "alphabetical") {
-        return a.country.localeCompare(
-          b.country
-        );
-      }
-
-
-      if (state.sort === "desire") {
-        return (
-          (b.desire || 0) -
-          (a.desire || 0)
-        );
-      }
-
-
-      if (state.sort === "safety") {
-        return (
-          (b.safety == null ? -Infinity : b.safety) -
-          (a.safety == null ? -Infinity : a.safety)
-        );
-      }
-
-
-      if (state.sort === "ethics") {
-        return (
-          (b.ethics == null ? -Infinity : b.ethics) -
-          (a.ethics == null ? -Infinity : a.ethics)
-        );
-      }
-
-
-      return (
-        (b.overall == null ? -Infinity : b.overall) -
-        (a.overall == null ? -Infinity : a.overall)
-      );
-    }
-  );
-
-
-  root.appendChild(
-    buildTable(filtered)
-  );
-
-
-  const note = el(
-    "div",
-    {
-      class: "note"
+  const legend = el('div', {class:'legend'});
+  TIER_ORDER.forEach(tier => {
+    const count = counts[tier];
+    const isActive = state.activeTier === tier;
+    const isDim = state.activeTier && !isActive;
+    const item = el('div', {
+      class: 'legend-item' + (isActive ? ' active':'') + (isDim ? ' dim':''),
+      onclick: () => { state.activeTier = state.activeTier === tier ? null : tier; render(); }
     },
-    "Overall scores are weighted averages of the available "
-    + "Desire, Safety, and Ethics scores. If the percentages "
-    + "do not add to 100, they are normalized automatically."
+      el('div', {class:'swatch', style:`background:${window.TIER_COLORS[tier]}`}),
+      el('span', {}, tier),
+      el('span', {class:'legend-count'}, String(count))
+    );
+    legend.appendChild(item);
+  });
+  if (state.activeTier) {
+    legend.appendChild(el('div', {class:'legend-clear', onclick: () => { state.activeTier = null; render(); }}, 'Show all tiers'));
+  }
+  chartRow.appendChild(legend);
+  wrap.appendChild(chartRow);
+
+  const visibleRows = rows
+    .filter(r => !state.activeTier || r.tier === state.activeTier)
+    .sort((a,b) => (b.overall ?? -1) - (a.overall ?? -1));
+
+  const table = el('table', {});
+  const thead = el('tr', {},
+    el('th', {}, 'Country'),
+    el('th', {}, 'Tier'),
+    el('th', {}, 'Safety'),
+    el('th', {}, 'Ethics'),
+    el('th', {}, 'Overall')
   );
+  table.appendChild(el('thead', {}, thead));
 
+  const tbody = el('tbody', {});
+  if (visibleRows.length === 0) {
+    const msg = rows.length === 0
+      ? 'No countries on your bucket list yet — set "bucketList": true for a country in data.js, or star it on the safety page.'
+      : 'No bucket-list countries in this tier.';
+    tbody.appendChild(el('tr',{}, el('td',{colspan:'5', class:'empty'}, msg)));
+  }
+  visibleRows.forEach(r => {
+    const tr = el('tr', {});
+    tr.appendChild(el('td', {}, el('div',{class:'country-name'}, r.name), el('div',{class:'continent-tag'}, r.continent)));
+    tr.appendChild(el('td', {}, el('span', {class:'tier-tag', style:`background:${window.TIER_COLORS[r.tier]}`}, r.tier)));
+    tr.appendChild(el('td', {}, scoreBar(r.safety)));
+    tr.appendChild(el('td', {}, scoreBar(r.ethics)));
+    tr.appendChild(el('td', {}, scoreBar(r.overall)));
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  wrap.appendChild(table);
 
-  root.appendChild(note);
+  wrap.appendChild(el('div', {class:'footnote'},
+    "Tiers: Safe (score ≥ 70), Moderate (40–69), Risky (< 40), Unrated (missing data). Click a slice or legend row to filter the list; click again to clear. Scores computed the same way as the safety rankings page, from the shared data.js file."
+  ));
+
+  root.appendChild(wrap);
 }
 
-
-/* =========================================================
-   START
-   ========================================================= */
-
-loadBucket();
-
+render();
 </script>
-
 </body>
 </html>
