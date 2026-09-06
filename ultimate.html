@@ -4,332 +4,1844 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>The Ultimate Ranking</title>
+
 <style>
-  html, body { margin:0; padding:0; background:#ffffff; }
-  * { box-sizing: border-box; }
-  body { font-family: ui-sans-serif, system-ui, sans-serif; color:#151515; }
-  .wrap { max-width: 880px; margin: 0 auto; padding: 2.25rem 1.1rem 3.5rem; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+}
 
-  h1 { font-family: Georgia, 'Times New Roman', serif; font-weight:400; font-size: 32px; letter-spacing:-0.01em; margin:0 0 6px; }
-  .dek { font-size: 14px; color:#5c5c58; max-width: 60ch; line-height:1.5; margin-bottom: 22px; }
+* {
+  box-sizing: border-box;
+}
 
-  .legend { display:flex; gap:18px; flex-wrap:wrap; font-size:12px; color:#5c5c58; margin-bottom:22px; padding-bottom:16px; border-bottom:1px solid #e5e5e0; }
-  .legend span.dot { display:inline-block; width:9px; height:9px; margin-right:6px; border-radius:1px; position:relative; top:1px; }
+body {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  color: #151515;
+}
 
-  .weights { border:1px solid #e5e5e0; padding:16px 18px; margin-bottom:22px; }
-  .weights h2 { font-family: Georgia, serif; font-weight:400; font-size:14px; margin:0 0 12px; color:#151515; }
-  .weight-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
-  .weight-row:last-child { margin-bottom:0; }
-  .weight-row label { width:78px; font-size:12.5px; flex-shrink:0; }
-  .weight-row input[type=range] { flex:1; accent-color:#151515; }
-  .weight-row .pct { width:38px; text-align:right; font-variant-numeric: tabular-nums; font-size:12.5px; color:#5c5c58; }
-  .weights .reset { margin-top:12px; font-size:11.5px; color:#5c5c58; background:none; border:none; text-decoration:underline; cursor:pointer; padding:0; }
+.wrap {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 2.25rem 1.1rem 3.5rem;
+}
 
-  .controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:16px; }
-  input[type=text] { flex:1 1 180px; padding:8px 10px; border:1px solid #cfcfc9; font-size:14px; font-family:inherit; }
-  select { padding:8px 10px; border:1px solid #cfcfc9; font-size:13px; font-family:inherit; background:#fff; }
-  .toggle-group { display:flex; border:1px solid #151515; }
-  .toggle-group button { padding:8px 11px; font-size:12px; border:none; background:#fff; cursor:pointer; border-left:1px solid #151515; white-space:nowrap; }
-  .toggle-group button:first-child { border-left:none; }
-  .toggle-group button.active { background:#151515; color:#fff; }
+h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  font-size: 32px;
+  letter-spacing: -0.01em;
+  margin: 0 0 6px;
+}
 
-  .status { font-size:12.5px; color:#5c5c58; margin-bottom:14px; }
-  .status.warn { color:#9a5a10; }
+.dek {
+  font-size: 14px;
+  color: #5c5c58;
+  max-width: 60ch;
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
 
-  .row { border-bottom:1px solid #e5e5e0; padding:13px 0; cursor:pointer; }
-  .row-top { display:flex; align-items:center; gap:12px; }
-  .rank { font-family: monospace; font-size:12px; color:#a3a39c; width:22px; flex-shrink:0; }
-  .name-block { flex:1; min-width:0; }
-  .name-line { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
-  .country-name { font-family: Georgia, serif; font-size:16.5px; }
-  .continent-tag { font-size:10.5px; color:#a3a39c; margin-left:6px; }
-  .overall-num { font-family: monospace; font-size:14px; white-space:nowrap; }
+.legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #5c5c58;
+  margin-bottom: 22px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e5e0;
+}
 
-  .segbar { height:7px; background:#f0f0ec; margin-top:7px; display:flex; overflow:hidden; }
-  .segbar > div { height:100%; }
-  .seg-desire { background:#a67c1b; }
-  .seg-safety { background:#1f4b3f; }
-  .seg-ethics { background:#2c3e63; }
+.legend span.dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  border-radius: 1px;
+  position: relative;
+  top: 1px;
+}
 
-  .meta-line { font-size:11px; color:#a3a39c; margin-top:5px; display:flex; gap:10px; flex-wrap:wrap; }
-  .flag { display:inline-block; font-size:9px; padding:1px 4px; border-radius:2px; border:1px solid; }
-  .flag.severe { background:#b23b3b; border-color:#b23b3b; color:#fff; }
-  .flag.mid { background:#fbf1de; border-color:#a67c1b; color:#7a5a10; }
+.weights {
+  border: 1px solid #e5e5e0;
+  padding: 16px 18px;
+  margin-bottom: 24px;
+}
 
-  .detail { padding: 4px 0 4px 34px; }
-  .detail .subrow { display:flex; justify-content:space-between; font-size:12.5px; padding:5px 0; border-bottom:1px solid #f2f2ee; }
-  .detail .subrow .subval { font-family:monospace; color:#5c5c58; }
-  .detail .landmarks { margin-top:8px; }
-  .detail .landmark-item { display:flex; justify-content:space-between; font-size:12.5px; padding:3px 0; color:#5c5c58; }
-  .detail .landmark-item.visited { text-decoration:line-through; opacity:0.55; }
-  .empty { text-align:center; color:#a3a39c; padding:2.5rem 0; font-size:13.5px; line-height:1.6; }
-  .footnote { font-size:10.5px; color:#a3a39c; margin-top:26px; line-height:1.6; }
+.weights h2 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 17px;
+  font-weight: 400;
+  margin: 0 0 5px;
+}
+
+.weights p {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #666;
+  margin: 0 0 14px;
+}
+
+.weight-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 150px;
+  gap: 22px;
+  align-items: center;
+}
+
+.weight-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  margin: 7px 0;
+  font-size: 12px;
+}
+
+.weight-row label {
+  color: #333;
+}
+
+.weight-row input[type="number"] {
+  width: 72px;
+  padding: 6px 7px;
+  border: 1px solid #cfcfc9;
+  border-radius: 0;
+  background: #fff;
+  color: #151515;
+  font: inherit;
+  font-size: 12px;
+  text-align: right;
+}
+
+.weight-row input[type="number"]:focus {
+  outline: none;
+  border-color: #777;
+}
+
+.weight-row .pct {
+  width: auto;
+  color: #5c5c58;
+}
+
+.weight-total {
+  font-size: 11.5px;
+  color: #5c5c58;
+  margin-top: 10px;
+}
+
+.weight-total.warn {
+  color: #9a5a10;
+}
+
+.weight-chart {
+  width: 140px;
+  height: 140px;
+  position: relative;
+  margin: auto;
+}
+
+.weight-chart svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.weight-chart circle {
+  fill: none;
+  stroke-width: 34;
+}
+
+.weight-chart .center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-family: monospace;
+}
+
+.weight-chart .center small {
+  font-family: inherit;
+  font-size: 10px;
+  color: #777;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.search {
+  flex: 1;
+  max-width: 340px;
+}
+
+.search input {
+  width: 100%;
+  border: 1px solid #d7d7d2;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.search input:focus {
+  border-color: #999;
+}
+
+.sort {
+  border: 1px solid #d7d7d2;
+  background: white;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 12px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #777;
+  font-weight: 500;
+  padding: 9px 7px;
+  border-bottom: 1px solid #cfcfc9;
+}
+
+.table td {
+  padding: 10px 7px;
+  border-bottom: 1px solid #ecece8;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.table tr:hover td {
+  background: #fafaf8;
+}
+
+.rank {
+  width: 42px;
+  color: #777;
+  font-family: monospace;
+}
+
+.country {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 14px !important;
+}
+
+.continent {
+  color: #777;
+  font-size: 11px !important;
+}
+
+.score {
+  font-family: monospace;
+  font-size: 12px !important;
+  text-align: right;
+}
+
+.bar-wrap {
+  width: 100%;
+  min-width: 80px;
+}
+
+.bar {
+  height: 5px;
+  background: #e8e8e3;
+  position: relative;
+}
+
+.bar-fill {
+  height: 100%;
+}
+
+.desire-fill {
+  background: #a67c1b;
+}
+
+.safety-fill {
+  background: #1f4b3f;
+}
+
+.ethics-fill {
+  background: #2c3e63;
+}
+
+.overall-fill {
+  background: #151515;
+}
+
+.detail {
+  display: none;
+}
+
+.detail.open {
+  display: table-row;
+}
+
+.detail-inner {
+  padding: 10px 12px 14px 49px;
+  background: #fafaf8;
+  border-bottom: 1px solid #e5e5e0;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.detail-card {
+  border-left: 2px solid #ddd;
+  padding-left: 10px;
+}
+
+.detail-card h3 {
+  margin: 0 0 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #777;
+  font-weight: 500;
+}
+
+.detail-card .big {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 19px;
+}
+
+.detail-card p {
+  margin: 4px 0 0;
+  font-size: 10.5px;
+  color: #666;
+  line-height: 1.4;
+}
+
+button.country-button {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+button.country-button:hover {
+  text-decoration: underline;
+}
+
+.note {
+  font-size: 10.5px;
+  color: #777;
+  line-height: 1.45;
+  margin-top: 18px;
+}
+
+.error {
+  border: 1px solid #d7c4aa;
+  background: #fcf8f1;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: #704b20;
+  margin-bottom: 16px;
+}
+
+.empty {
+  padding: 30px 10px;
+  text-align: center;
+  color: #777;
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .table th:nth-child(3),
+  .table td:nth-child(3) {
+    display: none;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .search {
+    max-width: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .weight-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .weight-chart {
+    width: 120px;
+    height: 120px;
+  }
+}
 </style>
 </head>
-<body>
-<div id="root"></div>
-<script>
-/* ---------- Source A: safety / ethics dataset ---------- */
-const DATA = {"Afghanistan": {"continent": "Asia", "es": "ALL", "fh": 8, "gpi": 3.106, "uk": "ALL", "us": "L4", "wps": 0.279}, "Albania": {"continent": "Europe", "es": null, "fh": 69, "gpi": 1.725, "uk": null, "us": null, "wps": 0.731}, "Algeria": {"continent": "Africa", "es": null, "fh": 31, "gpi": 2.053, "uk": null, "us": null, "wps": 0.621}, "Andorra": {"continent": "Europe", "es": null, "fh": 93, "gpi": null, "uk": null, "us": null, "wps": null}, "Angola": {"continent": "Africa", "es": null, "fh": 28, "gpi": 1.955, "uk": null, "us": null, "wps": 0.601}, "Antigua and Barbuda": {"continent": "Americas", "es": null, "fh": 83, "gpi": null, "uk": null, "us": null, "wps": null}, "Argentina": {"continent": "Americas", "es": null, "fh": 85, "gpi": 1.922, "uk": null, "us": null, "wps": 0.791}, "Armenia": {"continent": "Asia", "es": null, "fh": 54, "gpi": 1.825, "uk": null, "us": null, "wps": 0.762}, "Australia": {"continent": "Oceania", "es": null, "fh": 94, "gpi": 1.602, "uk": null, "us": null, "wps": 0.896}, "Austria": {"continent": "Europe", "es": null, "fh": 94, "gpi": 1.421, "uk": null, "us": null, "wps": 0.898}, "Azerbaijan": {"continent": "Asia", "es": null, "fh": 6, "gpi": 2.142, "uk": null, "us": "L3", "wps": 0.653}, "Bahamas": {"continent": "Americas", "es": null, "fh": 90, "gpi": null, "uk": null, "us": null, "wps": null}, "Bahrain": {"continent": "Asia", "es": null, "fh": 12, "gpi": 2.131, "uk": null, "us": "L3", "wps": 0.765}, "Bangladesh": {"continent": "Asia", "es": null, "fh": 44, "gpi": 2.226, "uk": null, "us": "L3", "wps": 0.526}, "Barbados": {"continent": "Americas", "es": null, "fh": 94, "gpi": null, "uk": null, "us": null, "wps": 0.807}, "Belarus": {"continent": "Europe", "es": "ALL", "fh": 7, "gpi": 2.216, "uk": "ALL", "us": "L4", "wps": 0.739}, "Belgium": {"continent": "Europe", "es": null, "fh": 95, "gpi": 1.608, "uk": null, "us": null, "wps": 0.912}, "Belize": {"continent": "Americas", "es": null, "fh": 87, "gpi": null, "uk": null, "us": null, "wps": 0.667}, "Benin": {"continent": "Africa", "es": null, "fh": 61, "gpi": 2.293, "uk": null, "us": null, "wps": 0.587}, "Bhutan": {"continent": "Asia", "es": null, "fh": 69, "gpi": 1.546, "uk": null, "us": null, "wps": 0.673}, "Bolivia": {"continent": "Americas", "es": null, "fh": 69, "gpi": 2.054, "uk": null, "us": null, "wps": 0.701}, "Bosnia and Herzegovina": {"continent": "Europe", "es": null, "fh": 54, "gpi": 1.81, "uk": null, "us": null, "wps": 0.753}, "Botswana": {"continent": "Africa", "es": null, "fh": 75, "gpi": 1.823, "uk": null, "us": null, "wps": 0.658}, "Brazil": {"continent": "Americas", "es": null, "fh": 73, "gpi": 2.333, "uk": null, "us": null, "wps": 0.632}, "Brunei": {"continent": "Asia", "es": null, "fh": 27, "gpi": null, "uk": null, "us": null, "wps": null}, "Bulgaria": {"continent": "Europe", "es": null, "fh": 74, "gpi": 1.628, "uk": null, "us": null, "wps": 0.814}, "Burkina Faso": {"continent": "Africa", "es": "ALL", "fh": 20, "gpi": 2.882, "uk": "ALL", "us": "L4", "wps": 0.507}, "Burundi": {"continent": "Africa", "es": null, "fh": 13, "gpi": 2.417, "uk": null, "us": "L3", "wps": 0.407}, "Cambodia": {"continent": "Asia", "es": null, "fh": 22, "gpi": 2.075, "uk": null, "us": null, "wps": 0.667}, "Cameroon": {"continent": "Africa", "es": null, "fh": 15, "gpi": 2.634, "uk": "ESS", "us": null, "wps": 0.451}, "Canada": {"continent": "Americas", "es": null, "fh": 97, "gpi": 1.525, "uk": null, "us": null, "wps": 0.885}, "Cape Verde": {"continent": "Africa", "es": null, "fh": 92, "gpi": null, "uk": null, "us": null, "wps": 0.741}, "Central African Republic": {"continent": "Africa", "es": "ALL", "fh": 5, "gpi": 2.906, "uk": "ALL", "us": "L4", "wps": 0.362}, "Chad": {"continent": "Africa", "es": "ALL", "fh": 15, "gpi": 2.769, "uk": "ALL", "us": "L4", "wps": 0.476}, "Chile": {"continent": "Americas", "es": null, "fh": 95, "gpi": 1.826, "uk": null, "us": null, "wps": 0.739}, "China": {"continent": "Asia", "es": null, "fh": 9, "gpi": 2.231, "uk": null, "us": "L3", "wps": 0.685}, "Colombia": {"continent": "Americas", "es": null, "fh": 69, "gpi": 2.735, "uk": "ESS", "us": "L3", "wps": 0.551}, "Comoros": {"continent": "Africa", "es": null, "fh": 41, "gpi": null, "uk": null, "us": null, "wps": 0.59}, "Costa Rica": {"continent": "Americas", "es": null, "fh": 91, "gpi": 1.86, "uk": null, "us": null, "wps": 0.824}, "Croatia": {"continent": "Europe", "es": null, "fh": 82, "gpi": 1.619, "uk": null, "us": null, "wps": 0.788}, "Cuba": {"continent": "Americas", "es": null, "fh": 9, "gpi": 2.139, "uk": null, "us": null, "wps": null}, "Cyprus": {"continent": "Europe", "es": null, "fh": 90, "gpi": 1.967, "uk": null, "us": null, "wps": 0.77}, "Czechia": {"continent": "Europe", "es": null, "fh": 95, "gpi": 1.517, "uk": null, "us": null, "wps": 0.832}, "Democratic Republic of the Congo": {"continent": "Africa", "es": null, "fh": 18, "gpi": 3.189, "uk": "ESS", "us": null, "wps": 0.405}, "Denmark": {"continent": "Europe", "es": null, "fh": 97, "gpi": 1.504, "uk": null, "us": null, "wps": 0.939}, "Djibouti": {"continent": "Africa", "es": null, "fh": 24, "gpi": 2.098, "uk": null, "us": null, "wps": 0.56}, "Dominica": {"continent": "Americas", "es": null, "fh": 92, "gpi": null, "uk": null, "us": null, "wps": null}, "Dominican Republic": {"continent": "Americas", "es": null, "fh": 67, "gpi": 2.038, "uk": null, "us": null, "wps": 0.675}, "East Timor": {"continent": "Asia", "es": null, "fh": 73, "gpi": null, "uk": null, "us": null, "wps": null}, "Ecuador": {"continent": "Americas", "es": null, "fh": 64, "gpi": 2.539, "uk": null, "us": null, "wps": 0.612}, "Egypt": {"continent": "Africa", "es": null, "fh": 18, "gpi": 2.186, "uk": "ESS", "us": null, "wps": 0.617}, "El Salvador": {"continent": "Americas", "es": null, "fh": 42, "gpi": 2.264, "uk": null, "us": null, "wps": 0.691}, "Equatorial Guinea": {"continent": "Africa", "es": null, "fh": 5, "gpi": 1.729, "uk": null, "us": null, "wps": null}, "Eritrea": {"continent": "Africa", "es": null, "fh": 3, "gpi": 2.412, "uk": "ESS", "us": null, "wps": null}, "Estonia": {"continent": "Europe", "es": null, "fh": 96, "gpi": 1.623, "uk": null, "us": null, "wps": 0.896}, "Eswatini": {"continent": "Africa", "es": null, "fh": 17, "gpi": 2.095, "uk": "ESS", "us": null, "wps": 0.556}, "Ethiopia": {"continent": "Africa", "es": null, "fh": 18, "gpi": 2.648, "uk": "ESS", "us": "L3", "wps": 0.516}, "Fiji": {"continent": "Oceania", "es": null, "fh": 72, "gpi": null, "uk": null, "us": null, "wps": 0.731}, "Finland": {"continent": "Europe", "es": null, "fh": 100, "gpi": 1.478, "uk": null, "us": null, "wps": 0.921}, "France": {"continent": "Europe", "es": null, "fh": 89, "gpi": 2.083, "uk": null, "us": null, "wps": 0.864}, "Gabon": {"continent": "Africa", "es": null, "fh": 25, "gpi": 2.086, "uk": null, "us": null, "wps": 0.679}, "Gambia": {"continent": "Africa", "es": null, "fh": 51, "gpi": 1.837, "uk": null, "us": null, "wps": 0.528}, "Georgia": {"continent": "Asia", "es": null, "fh": 51, "gpi": 2.066, "uk": null, "us": null, "wps": 0.798}, "Germany": {"continent": "Europe", "es": null, "fh": 95, "gpi": 1.657, "uk": null, "us": null, "wps": 0.869}, "Ghana": {"continent": "Africa", "es": null, "fh": 80, "gpi": 1.943, "uk": null, "us": null, "wps": 0.639}, "Greece": {"continent": "Europe", "es": null, "fh": 85, "gpi": 1.828, "uk": null, "us": null, "wps": 0.752}, "Grenada": {"continent": "Americas", "es": null, "fh": 89, "gpi": null, "uk": null, "us": null, "wps": 0.787}, "Guatemala": {"continent": "Americas", "es": null, "fh": 48, "gpi": 2.025, "uk": null, "us": "L3", "wps": 0.561}, "Guinea": {"continent": "Africa", "es": null, "fh": 28, "gpi": 2.22, "uk": null, "us": null, "wps": 0.527}, "Guinea-Bissau": {"continent": "Africa", "es": null, "fh": 33, "gpi": 2.012, "uk": "ESS", "us": "L3", "wps": 0.508}, "Guyana": {"continent": "Americas", "es": null, "fh": 74, "gpi": 2.093, "uk": null, "us": "L3", "wps": 0.77}, "Haiti": {"continent": "Americas", "es": "ALL", "fh": 22, "gpi": 2.755, "uk": "ALL", "us": "L4", "wps": 0.399}, "Honduras": {"continent": "Americas", "es": null, "fh": 47, "gpi": 2.075, "uk": "ESS", "us": "L3", "wps": 0.561}, "Hong Kong": {"continent": "Other", "es": null, "fh": 41, "gpi": null, "uk": null, "us": "L3", "wps": 0.809}, "Hungary": {"continent": "Europe", "es": null, "fh": 65, "gpi": 1.538, "uk": null, "us": null, "wps": 0.832}, "Iceland": {"continent": "Europe", "es": null, "fh": 95, "gpi": 1.161, "uk": null, "us": null, "wps": 0.932}, "India": {"continent": "Asia", "es": null, "fh": 62, "gpi": 2.409, "uk": null, "us": null, "wps": 0.607}, "Indonesia": {"continent": "Asia", "es": null, "fh": 56, "gpi": 1.918, "uk": null, "us": null, "wps": 0.678}, "Iran": {"continent": "Asia", "es": "ALL", "fh": 10, "gpi": 2.759, "uk": "ALL", "us": "L4", "wps": 0.608}, "Iraq": {"continent": "Asia", "es": "ALL", "fh": 31, "gpi": 2.662, "uk": "ALL", "us": "L4", "wps": 0.51}, "Ireland": {"continent": "Europe", "es": null, "fh": 98, "gpi": 1.371, "uk": null, "us": null, "wps": 0.891}, "Israel": {"continent": "Asia", "es": null, "fh": 73, "gpi": 3.124, "uk": "ESS", "us": "L3", "wps": 0.697}, "Italy": {"continent": "Europe", "es": null, "fh": 87, "gpi": 1.712, "uk": null, "us": null, "wps": 0.811}, "Ivory Coast": {"continent": "Africa", "es": null, "fh": 46, "gpi": 2.061, "uk": null, "us": null, "wps": 0.589}, "Jamaica": {"continent": "Americas", "es": null, "fh": 81, "gpi": 1.919, "uk": null, "us": null, "wps": 0.703}, "Japan": {"continent": "Asia", "es": null, "fh": 96, "gpi": 1.489, "uk": null, "us": null, "wps": 0.866}, "Jordan": {"continent": "Asia", "es": null, "fh": 34, "gpi": 1.913, "uk": null, "us": "L3", "wps": 0.686}, "Kazakhstan": {"continent": "Asia", "es": null, "fh": 23, "gpi": 1.771, "uk": null, "us": null, "wps": 0.722}, "Kenya": {"continent": "Africa", "es": null, "fh": 49, "gpi": 2.447, "uk": "ESS", "us": null, "wps": 0.542}, "Kiribati": {"continent": "Oceania", "es": null, "fh": 89, "gpi": null, "uk": null, "us": null, "wps": 0.652}, "Kosovo": {"continent": "Europe", "es": null, "fh": 61, "gpi": null, "uk": null, "us": null, "wps": 0.7}, "Kuwait": {"continent": "Asia", "es": null, "fh": 30, "gpi": 1.813, "uk": null, "us": "L3", "wps": 0.723}, "Kyrgyzstan": {"continent": "Asia", "es": null, "fh": 25, "gpi": 1.853, "uk": null, "us": null, "wps": 0.697}, "Laos": {"continent": "Asia", "es": null, "fh": 13, "gpi": 1.846, "uk": null, "us": null, "wps": 0.698}, "Latvia": {"continent": "Europe", "es": null, "fh": 89, "gpi": 1.589, "uk": null, "us": null, "wps": 0.884}, "Lebanon": {"continent": "Asia", "es": "ALL", "fh": 41, "gpi": 2.435, "uk": "ALL", "us": "L4", "wps": 0.575}, "Lesotho": {"continent": "Africa", "es": null, "fh": 67, "gpi": 2.016, "uk": null, "us": null, "wps": 0.614}, "Liberia": {"continent": "Africa", "es": null, "fh": 65, "gpi": 2.024, "uk": null, "us": null, "wps": 0.512}, "Libya": {"continent": "Africa", "es": "ALL", "fh": 10, "gpi": 2.361, "uk": "ALL", "us": "L4", "wps": 0.608}, "Liechtenstein": {"continent": "Europe", "es": null, "fh": 90, "gpi": null, "uk": null, "us": null, "wps": null}, "Lithuania": {"continent": "Europe", "es": null, "fh": 90, "gpi": 1.62, "uk": null, "us": null, "wps": 0.887}, "Luxembourg": {"continent": "Europe", "es": null, "fh": 97, "gpi": null, "uk": null, "us": null, "wps": 0.918}, "Madagascar": {"continent": "Africa", "es": null, "fh": 50, "gpi": 1.849, "uk": null, "us": null, "wps": 0.466}, "Malawi": {"continent": "Africa", "es": null, "fh": 68, "gpi": 1.994, "uk": null, "us": null, "wps": 0.549}, "Malaysia": {"continent": "Asia", "es": null, "fh": 53, "gpi": 1.513, "uk": null, "us": null, "wps": 0.738}, "Maldives": {"continent": "Asia", "es": null, "fh": 41, "gpi": null, "uk": null, "us": null, "wps": 0.704}, "Mali": {"continent": "Africa", "es": "ALL", "fh": 21, "gpi": 2.996, "uk": "ALL", "us": "L4", "wps": 0.478}, "Malta": {"continent": "Europe", "es": null, "fh": 88, "gpi": null, "uk": null, "us": null, "wps": 0.841}, "Marshall Islands": {"continent": "Oceania", "es": null, "fh": 93, "gpi": null, "uk": null, "us": null, "wps": 0.67}, "Mauritania": {"continent": "Africa", "es": "ALL", "fh": 38, "gpi": 2.184, "uk": "ESS", "us": "L3", "wps": 0.475}, "Mauritius": {"continent": "Africa", "es": null, "fh": 87, "gpi": 1.586, "uk": null, "us": null, "wps": 0.679}, "Mexico": {"continent": "Americas", "es": null, "fh": 58, "gpi": 2.65, "uk": null, "us": null, "wps": 0.558}, "Micronesia": {"continent": "Oceania", "es": null, "fh": 92, "gpi": null, "uk": null, "us": null, "wps": 0.648}, "Moldova": {"continent": "Europe", "es": null, "fh": 60, "gpi": 1.836, "uk": null, "us": null, "wps": 0.821}, "Monaco": {"continent": "Europe", "es": null, "fh": 82, "gpi": null, "uk": null, "us": null, "wps": null}, "Mongolia": {"continent": "Asia", "es": null, "fh": 84, "gpi": 1.692, "uk": null, "us": null, "wps": 0.799}, "Montenegro": {"continent": "Europe", "es": null, "fh": 68, "gpi": 1.672, "uk": null, "us": null, "wps": 0.743}, "Morocco": {"continent": "Africa", "es": null, "fh": 37, "gpi": 1.887, "uk": null, "us": null, "wps": 0.668}, "Mozambique": {"continent": "Africa", "es": null, "fh": 42, "gpi": 2.383, "uk": "ESS", "us": null, "wps": 0.548}, "Myanmar": {"continent": "Asia", "es": "ALL", "fh": 4, "gpi": 2.911, "uk": "ALL", "us": "L4", "wps": 0.442}, "Namibia": {"continent": "Africa", "es": null, "fh": 73, "gpi": 1.872, "uk": null, "us": null, "wps": 0.608}, "Nauru": {"continent": "Oceania", "es": null, "fh": 75, "gpi": null, "uk": null, "us": null, "wps": null}, "Nepal": {"continent": "Asia", "es": null, "fh": 59, "gpi": 2.143, "uk": null, "us": null, "wps": 0.631}, "Netherlands": {"continent": "Europe", "es": null, "fh": 97, "gpi": 1.566, "uk": null, "us": null, "wps": 0.905}, "New Zealand": {"continent": "Oceania", "es": null, "fh": 99, "gpi": 1.343, "uk": null, "us": null, "wps": 0.898}, "Nicaragua": {"continent": "Americas", "es": null, "fh": 14, "gpi": 2.107, "uk": null, "us": "L3", "wps": 0.659}, "Niger": {"continent": "Africa", "es": "ALL", "fh": 27, "gpi": 2.832, "uk": "ALL", "us": "L3", "wps": 0.492}, "Nigeria": {"continent": "Africa", "es": "ALL", "fh": 44, "gpi": 2.755, "uk": "ESS", "us": "L3", "wps": 0.495}, "North Korea": {"continent": "Asia", "es": "ALL", "fh": 3, "gpi": 2.845, "uk": "ALL", "us": null, "wps": null}, "North Macedonia": {"continent": "Europe", "es": null, "fh": 67, "gpi": 1.792, "uk": null, "us": null, "wps": 0.787}, "Norway": {"continent": "Europe", "es": null, "fh": 99, "gpi": 1.688, "uk": null, "us": null, "wps": 0.924}, "Oman": {"continent": "Asia", "es": null, "fh": 24, "gpi": 1.85, "uk": null, "us": "L3", "wps": 0.755}, "Pakistan": {"continent": "Asia", "es": "ALL", "fh": 32, "gpi": 2.919, "uk": "ESS", "us": "L3", "wps": 0.462}, "Palau": {"continent": "Oceania", "es": null, "fh": 92, "gpi": null, "uk": null, "us": null, "wps": 0.739}, "Palestine": {"continent": "Asia", "es": "ALL", "fh": null, "gpi": 2.877, "uk": "ESS", "us": null, "wps": 0.469}, "Panama": {"continent": "Americas", "es": null, "fh": 82, "gpi": 1.976, "uk": null, "us": null, "wps": 0.696}, "Papua New Guinea": {"continent": "Oceania", "es": null, "fh": 61, "gpi": 2.002, "uk": "ESS", "us": "L3", "wps": 0.507}, "Paraguay": {"continent": "Americas", "es": null, "fh": 63, "gpi": 1.882, "uk": null, "us": null, "wps": 0.768}, "Peru": {"continent": "Americas", "es": null, "fh": 66, "gpi": 2.12, "uk": null, "us": null, "wps": 0.701}, "Philippines": {"continent": "Asia", "es": null, "fh": 58, "gpi": 2.092, "uk": null, "us": null, "wps": 0.607}, "Poland": {"continent": "Europe", "es": null, "fh": 82, "gpi": 1.615, "uk": null, "us": null, "wps": 0.854}, "Portugal": {"continent": "Europe", "es": null, "fh": 96, "gpi": 1.427, "uk": null, "us": null, "wps": 0.861}, "Puerto Rico": {"continent": "Other", "es": null, "fh": null, "gpi": null, "uk": null, "us": null, "wps": 0.707}, "Qatar": {"continent": "Asia", "es": null, "fh": 25, "gpi": 1.676, "uk": null, "us": "L3", "wps": 0.723}, "Republic of the Congo": {"continent": "Africa", "es": null, "fh": 17, "gpi": 2.256, "uk": null, "us": null, "wps": 0.583}, "Romania": {"continent": "Europe", "es": null, "fh": 83, "gpi": 1.788, "uk": null, "us": null, "wps": 0.801}, "Russia": {"continent": "Europe", "es": "ALL", "fh": 12, "gpi": 3.367, "uk": "ALL", "us": "L4", "wps": 0.718}, "Rwanda": {"continent": "Africa", "es": null, "fh": 21, "gpi": 2.2, "uk": null, "us": "L3", "wps": 0.624}, "Saint Kitts and Nevis": {"continent": "Americas", "es": null, "fh": 89, "gpi": null, "uk": null, "us": null, "wps": null}, "Saint Lucia": {"continent": "Americas", "es": null, "fh": 91, "gpi": null, "uk": null, "us": null, "wps": null}, "Saint Vincent and the Grenadines": {"continent": "Americas", "es": null, "fh": 90, "gpi": null, "uk": null, "us": null, "wps": null}, "Samoa": {"continent": "Oceania", "es": null, "fh": 84, "gpi": null, "uk": null, "us": null, "wps": 0.685}, "San Marino": {"continent": "Europe", "es": null, "fh": 97, "gpi": null, "uk": null, "us": null, "wps": null}, "Sao Tome and Principe": {"continent": "Africa", "es": null, "fh": 84, "gpi": null, "uk": null, "us": null, "wps": 0.62}, "Saudi Arabia": {"continent": "Asia", "es": null, "fh": 9, "gpi": 2.067, "uk": "ESS", "us": "L3", "wps": 0.739}, "Senegal": {"continent": "Africa", "es": null, "fh": 70, "gpi": 1.939, "uk": null, "us": null, "wps": 0.657}, "Serbia": {"continent": "Europe", "es": null, "fh": 53, "gpi": 1.919, "uk": null, "us": null, "wps": 0.844}, "Seychelles": {"continent": "Africa", "es": null, "fh": 81, "gpi": null, "uk": null, "us": null, "wps": 0.81}, "Sierra Leone": {"continent": "Africa", "es": null, "fh": 61, "gpi": 1.937, "uk": null, "us": null, "wps": 0.601}, "Singapore": {"continent": "Asia", "es": null, "fh": 48, "gpi": 1.435, "uk": null, "us": null, "wps": 0.884}, "Slovakia": {"continent": "Europe", "es": null, "fh": 88, "gpi": 1.661, "uk": null, "us": null, "wps": 0.797}, "Slovenia": {"continent": "Europe", "es": null, "fh": 97, "gpi": 1.369, "uk": null, "us": null, "wps": 0.889}, "Solomon Islands": {"continent": "Oceania", "es": null, "fh": 74, "gpi": null, "uk": null, "us": null, "wps": 0.658}, "Somalia": {"continent": "Africa", "es": "ALL", "fh": 7, "gpi": 2.973, "uk": "ALL", "us": "L4", "wps": 0.455}, "South Africa": {"continent": "Africa", "es": null, "fh": 78, "gpi": 2.308, "uk": null, "us": null, "wps": 0.648}, "South Korea": {"continent": "Asia", "es": null, "fh": 83, "gpi": 1.839, "uk": null, "us": null, "wps": 0.815}, "South Sudan": {"continent": "Africa", "es": "ALL", "fh": 0, "gpi": 3.116, "uk": "ALL", "us": "L4", "wps": 0.411}, "Spain": {"continent": "Europe", "es": null, "fh": 90, "gpi": 1.654, "uk": null, "us": null, "wps": 0.862}, "Sri Lanka": {"continent": "Asia", "es": null, "fh": 49, "gpi": 1.91, "uk": "ESS", "us": null, "wps": 0.706}, "Sudan": {"continent": "Africa", "es": "ALL", "fh": 1, "gpi": 3.195, "uk": "ALL", "us": "L4", "wps": 0.397}, "Suriname": {"continent": "Americas", "es": null, "fh": 80, "gpi": null, "uk": null, "us": null, "wps": 0.779}, "Sweden": {"continent": "Europe", "es": null, "fh": 96, "gpi": 1.732, "uk": null, "us": null, "wps": 0.924}, "Switzerland": {"continent": "Europe", "es": null, "fh": 96, "gpi": 1.363, "uk": null, "us": null, "wps": 0.877}, "Syria": {"continent": "Asia", "es": "ALL", "fh": 20, "gpi": 3.067, "uk": "ALL", "us": "L4", "wps": 0.364}, "Taiwan": {"continent": "Asia", "es": null, "fh": 94, "gpi": 1.751, "uk": null, "us": null, "wps": 0.854}, "Tajikistan": {"continent": "Asia", "es": null, "fh": 7, "gpi": 1.799, "uk": null, "us": null, "wps": 0.685}, "Tanzania": {"continent": "Africa", "es": null, "fh": 33, "gpi": 2.08, "uk": null, "us": "L3", "wps": 0.624}, "Thailand": {"continent": "Asia", "es": null, "fh": 30, "gpi": 2.089, "uk": null, "us": null, "wps": 0.761}, "Timor-Leste": {"continent": "Asia", "es": null, "fh": 73, "gpi": 1.681, "uk": null, "us": null, "wps": 0.668}, "Togo": {"continent": "Africa", "es": null, "fh": 34, "gpi": 2.251, "uk": null, "us": null, "wps": 0.562}, "Tonga": {"continent": "Oceania", "es": null, "fh": 80, "gpi": null, "uk": null, "us": null, "wps": 0.685}, "Trinidad and Tobago": {"continent": "Americas", "es": null, "fh": 79, "gpi": 1.959, "uk": null, "us": "L3", "wps": 0.685}, "Tunisia": {"continent": "Africa", "es": null, "fh": 40, "gpi": 1.947, "uk": "ESS", "us": null, "wps": 0.671}, "Turkey": {"continent": "Asia", "es": null, "fh": 31, "gpi": 2.605, "uk": "ESS", "us": null, "wps": 0.664}, "Turkmenistan": {"continent": "Asia", "es": null, "fh": 1, "gpi": 1.903, "uk": null, "us": null, "wps": 0.72}, "Tuvalu": {"continent": "Oceania", "es": null, "fh": 93, "gpi": null, "uk": null, "us": null, "wps": null}, "Uganda": {"continent": "Africa", "es": null, "fh": 32, "gpi": 2.42, "uk": "ESS", "us": "L4", "wps": 0.587}, "Ukraine": {"continent": "Europe", "es": "ALL", "fh": 39, "gpi": 3.184, "uk": "ALL", "us": "L4", "wps": 0.645}, "United Arab Emirates": {"continent": "Asia", "es": null, "fh": 17, "gpi": 1.927, "uk": null, "us": "L3", "wps": 0.872}, "United Kingdom": {"continent": "Europe", "es": null, "fh": 93, "gpi": 1.73, "uk": null, "us": null, "wps": 0.864}, "United States": {"continent": "Americas", "es": null, "fh": 81, "gpi": 2.535, "uk": null, "us": null, "wps": 0.84}, "Uruguay": {"continent": "Americas", "es": null, "fh": 96, "gpi": 1.754, "uk": null, "us": null, "wps": 0.822}, "Uzbekistan": {"continent": "Asia", "es": null, "fh": 11, "gpi": 1.726, "uk": null, "us": null, "wps": 0.674}, "Vanuatu": {"continent": "Oceania", "es": null, "fh": 89, "gpi": null, "uk": null, "us": null, "wps": 0.646}, "Vatican City": {"continent": "Europe", "es": null, "fh": 66, "gpi": null, "uk": null, "us": null, "wps": null}, "Venezuela": {"continent": "Americas", "es": "ALL", "fh": 14, "gpi": 2.516, "uk": "ALL", "us": "L3", "wps": 0.638}, "Vietnam": {"continent": "Asia", "es": null, "fh": 19, "gpi": 1.738, "uk": null, "us": null, "wps": 0.721}, "Yemen": {"continent": "Asia", "es": "ALL", "fh": 8, "gpi": 3.081, "uk": "ALL", "us": "L4", "wps": 0.323}, "Zambia": {"continent": "Africa", "es": null, "fh": 54, "gpi": 1.992, "uk": null, "us": null, "wps": 0.566}, "Zimbabwe": {"continent": "Africa", "es": null, "fh": 25, "gpi": 2.051, "uk": null, "us": null, "wps": 0.59}};
 
+<body>
+
+<div class="wrap">
+
+  <h1>The Ultimate Ranking</h1>
+
+  <div class="dek">
+    A combined ranking of countries based on how much I want to visit them,
+    how safe they are for me to visit, and their ethical conditions.
+    The weights below determine how much each component contributes.
+  </div>
+
+  <div class="legend">
+    <span>
+      <span class="dot" style="background:#a67c1b;"></span>
+      Desire
+    </span>
+
+    <span>
+      <span class="dot" style="background:#1f4b3f;"></span>
+      Safety
+    </span>
+
+    <span>
+      <span class="dot" style="background:#2c3e63;"></span>
+      Ethics
+    </span>
+
+    <span>
+      <span class="dot" style="background:#151515;"></span>
+      Overall
+    </span>
+  </div>
+
+  <div id="root"></div>
+
+</div>
+
+<!--
+  IMPORTANT:
+  Keep safety-data.js in the SAME folder as ultimate.html.
+  It contains the shared safety/ethics dataset used by both pages.
+-->
+<script src="safety-data.js"></script>
+
+<script>
 const STORAGE_KEY = "bucket-list:data";
 
-/* ---------- helpers ---------- */
-const el = (tag, attrs, ...children) => {
-  const e = document.createElement(tag);
-  if (attrs) for (const k in attrs) {
-    if (k === 'class') e.className = attrs[k];
-    else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
-    else e.setAttribute(k, attrs[k]);
-  }
-  children.flat().forEach(c => {
-    if (c === null || c === undefined) return;
-    e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
-  });
-  return e;
-};
-
-function safetyEthics(d) {
-  let gpiScore = null;
-  if (d.gpi != null) {
-    const clamped = Math.max(1.1, Math.min(3.4, d.gpi));
-    gpiScore = 100 - ((clamped - 1.1) / (3.4 - 1.1)) * 100;
-  }
-  let wpsScore = d.wps != null ? d.wps * 100 : null;
-
-  let penalty = 0;
-  if (d.us === 'L4') penalty += 35;
-  else if (d.us === 'L3') penalty += 14;
-  if (d.uk === 'ALL') penalty += 25;
-  else if (d.uk === 'ESS') penalty += 10;
-  if (d.es === 'ALL') penalty += 20;
-
-  let base = null, weightSum = 0, weighted = 0;
-  if (gpiScore != null) { weighted += gpiScore * 0.55; weightSum += 0.55; }
-  if (wpsScore != null) { weighted += wpsScore * 0.45; weightSum += 0.45; }
-  if (weightSum > 0) base = weighted / weightSum;
-
-  let safety = base != null ? Math.max(0, base - penalty) : (penalty > 0 ? Math.max(0, 45 - penalty) : null);
-  let ethics = d.fh != null ? d.fh : null;
-  return { safety, ethics, penalty };
-}
-
-function advisoryFlags(d) {
-  const wrap = el('span', {});
-  if (d.us === 'L4') wrap.appendChild(el('span',{class:'flag severe'},'US L4'));
-  else if (d.us === 'L3') wrap.appendChild(el('span',{class:'flag mid'},'US L3'));
-  if (d.uk === 'ALL') wrap.appendChild(el('span',{class:'flag severe'},'UK advise against'));
-  else if (d.uk === 'ESS') wrap.appendChild(el('span',{class:'flag mid'},'UK partial'));
-  if (d.es === 'ALL') wrap.appendChild(el('span',{class:'flag severe'},'ES advisory'));
-  return wrap;
-}
-
-/* ---------- state ---------- */
 let bucket = {};
 let bucketLoaded = false;
 let bucketError = false;
 
-let state = {
-  search: '',
-  continent: 'All',
-  scope: 'mine',       // 'mine' | 'all'
+const state = {
   wDesire: 40,
   wSafety: 35,
   wEthics: 25,
+  search: "",
+  sort: "overall"
 };
+
+const root = document.getElementById("root");
+
+const DATA = window.SAFETY_DATA || {};
+
+function el(tag, attrs = {}, ...children) {
+  const node = document.createElement(tag);
+
+  Object.entries(attrs).forEach(([key, value]) => {
+    if (key === "class") {
+      node.className = value;
+    } else if (key === "text") {
+      node.textContent = value;
+    } else if (key === "html") {
+      node.innerHTML = value;
+    } else {
+      node.setAttribute(key, value);
+    }
+  });
+
+  children.flat().forEach(child => {
+    if (child == null) return;
+
+    if (typeof child === "string") {
+      node.appendChild(document.createTextNode(child));
+    } else {
+      node.appendChild(child);
+    }
+  });
+
+  return node;
+}
+
+
+/* =========================================================
+   BUCKET LIST DATA
+   ========================================================= */
 
 async function loadBucket() {
   try {
-    const res = await window.storage.get(STORAGE_KEY, false);
-    bucket = res ? JSON.parse(res.value) : {};
+    const raw = localStorage.getItem("personal:" + STORAGE_KEY);
+
+    bucket = raw ? JSON.parse(raw) : {};
+
+    bucketError = false;
   } catch (e) {
     bucket = {};
+    bucketError = true;
   }
+
   bucketLoaded = true;
+
   render();
 }
 
+
+window.addEventListener("storage", function(e) {
+  if (e.key === "personal:" + STORAGE_KEY) {
+    loadBucket();
+  }
+});
+
+
+/* =========================================================
+   DESIRE SCORE
+   ========================================================= */
+
 function computeDesire() {
   const raw = {};
+
   Object.entries(bucket).forEach(([name, entry]) => {
-    const landmarks = entry.landmarks || [];
+    const landmarks = entry && Array.isArray(entry.landmarks)
+      ? entry.landmarks
+      : [];
+
     const active = landmarks.filter(l => !l.visited);
+
     raw[name] = {
-      score: active.reduce((s, l) => s + l.rating, 0),
+      score: active.reduce(
+        (sum, landmark) => sum + (Number(landmark.rating) || 0),
+        0
+      ),
+
       total: landmarks.length,
+
       visited: landmarks.length - active.length,
-      landmarks,
+
+      landmarks
     };
   });
+
   return raw;
 }
 
-function computeRows() {
-  const desireRaw = computeDesire();
-  const maxDesireScore = Math.max(1, ...Object.values(desireRaw).map(d => d.score));
 
-  const names = state.scope === 'mine'
-    ? Object.keys(bucket)
-    : Object.keys(DATA);
+/*
+  Desire is based ONLY on unvisited landmarks.
 
-  return names.map(name => {
-    const d = DATA[name] || { continent: 'Other' };
-    const { safety, ethics } = safetyEthics(d);
-    const bl = desireRaw[name];
-    const desire = bl ? (bl.score / maxDesireScore) * 100 : (state.scope === 'mine' ? null : 0);
+  This means:
+  - adding a landmark increases desire
+  - giving a landmark a higher rating increases desire
+  - marking a landmark visited removes its rating from desire
+*/
+function desireScoreForCountry(desire, country) {
+  if (!desire[country]) {
+    return 0;
+  }
 
-    const parts = [];
-    if (desire != null) parts.push([desire, state.wDesire]);
-    if (safety != null) parts.push([safety, state.wSafety]);
-    if (ethics != null) parts.push([ethics, state.wEthics]);
-    const wsum = parts.reduce((s, p) => s + p[1], 0);
-    const overall = wsum > 0 ? parts.reduce((s, p) => s + p[0] * p[1], 0) / wsum : null;
-
-    return {
-      name, continent: d.continent || 'Other',
-      safety, ethics, desire, overall,
-      d, bl,
-    };
-  });
+  return Number(desire[country].score) || 0;
 }
 
-/* ---------- render ---------- */
-let expanded = {};
 
-function render() {
-  const root = document.getElementById('root');
-  root.innerHTML = '';
-  const wrap = el('div', { class: 'wrap' });
+/* =========================================================
+   SAFETY SCORE
+   ========================================================= */
 
-  wrap.appendChild(el('h1', {}, 'The Ultimate Ranking'));
-  wrap.appendChild(el('p', { class: 'dek' },
-    'Where you want to go, weighed against how safe it is to go there. Desire comes from your bucket list; safety and ethics come from the country dataset.'));
+function calculateSafety(d) {
 
-  const legend = el('div', { class: 'legend' },
-    el('span', {}, el('span', { class: 'dot', style: 'background:#a67c1b' }), 'Desire'),
-    el('span', {}, el('span', { class: 'dot', style: 'background:#1f4b3f' }), 'Safety'),
-    el('span', {}, el('span', { class: 'dot', style: 'background:#2c3e63' }), 'Ethics'),
+  if (!d) {
+    return null;
+  }
+
+  let gpiScore = null;
+
+  if (d.gpi != null) {
+    const clamped = Math.max(
+      1.1,
+      Math.min(3.4, Number(d.gpi))
+    );
+
+    gpiScore =
+      100 -
+      ((clamped - 1.1) / (3.4 - 1.1)) * 100;
+  }
+
+
+  let wpsScore = null;
+
+  if (d.wps != null) {
+    wpsScore = Number(d.wps) * 100;
+  }
+
+
+  /*
+    Travel-advisory penalties.
+
+    These are deliberately subtracted from the underlying
+    GPI/WPS safety score.
+  */
+
+  let penalty = 0;
+
+  if (d.us === "L4") {
+    penalty += 35;
+  } else if (d.us === "L3") {
+    penalty += 14;
+  }
+
+  if (d.uk === "ALL") {
+    penalty += 25;
+  } else if (d.uk === "ESS") {
+    penalty += 10;
+  }
+
+  if (d.es === "ALL") {
+    penalty += 20;
+  }
+
+
+  let base = null;
+  let weightSum = 0;
+  let weighted = 0;
+
+
+  if (gpiScore != null && Number.isFinite(gpiScore)) {
+    weighted += gpiScore * 0.55;
+    weightSum += 0.55;
+  }
+
+
+  if (wpsScore != null && Number.isFinite(wpsScore)) {
+    weighted += wpsScore * 0.45;
+    weightSum += 0.45;
+  }
+
+
+  if (weightSum > 0) {
+    base = weighted / weightSum;
+  }
+
+
+  let safety = null;
+
+  if (base != null) {
+    safety = Math.max(0, base - penalty);
+  } else if (penalty > 0) {
+    safety = Math.max(0, 45 - penalty);
+  }
+
+
+  return safety;
+}
+
+
+/* =========================================================
+   ETHICS SCORE
+   ========================================================= */
+
+function ethicsScoreForCountry(d) {
+  if (!d || d.fh == null) {
+    return null;
+  }
+
+  return Number(d.fh);
+}
+
+
+/* =========================================================
+   FINAL RANKING
+   ========================================================= */
+
+function calculateOverall(desire, safety, ethics) {
+
+  const parts = [];
+
+  if (desire != null && Number.isFinite(desire)) {
+    parts.push([
+      desire,
+      Number(state.wDesire) || 0
+    ]);
+  }
+
+  if (safety != null && Number.isFinite(safety)) {
+    parts.push([
+      safety,
+      Number(state.wSafety) || 0
+    ]);
+  }
+
+  if (ethics != null && Number.isFinite(ethics)) {
+    parts.push([
+      ethics,
+      Number(state.wEthics) || 0
+    ]);
+  }
+
+
+  const weightSum = parts.reduce(
+    (sum, part) => sum + part[1],
+    0
   );
-  wrap.appendChild(legend);
 
-  // weights panel
-  const wpanel = el('div', { class: 'weights' });
-  wpanel.appendChild(el('h2', {}, 'How much each factor counts'));
-  const mkSlider = (label, key) => {
-    const row = el('div', { class: 'weight-row' });
-    row.appendChild(el('label', {}, label));
-    const range = el('input', { type: 'range', min: '0', max: '100', value: String(state[key]) });
-    range.addEventListener('input', e => { state[key] = Number(e.target.value); render(); });
-    row.appendChild(range);
-    const total = state.wDesire + state.wSafety + state.wEthics || 1;
-    row.appendChild(el('span', { class: 'pct' }, Math.round((state[key] / total) * 100) + '%'));
+
+  if (weightSum <= 0) {
+    return null;
+  }
+
+
+  return (
+    parts.reduce(
+      (sum, part) => sum + part[0] * part[1],
+      0
+    ) / weightSum
+  );
+}
+
+
+/* =========================================================
+   COUNTRY LIST
+   ========================================================= */
+
+function getCountries() {
+
+  const names = new Set();
+
+  Object.keys(DATA).forEach(name => {
+    names.add(name);
+  });
+
+  Object.keys(bucket).forEach(name => {
+    names.add(name);
+  });
+
+  return Array.from(names);
+}
+
+
+/* =========================================================
+   WEIGHT CONTROLS
+   ========================================================= */
+
+function buildWeightPanel() {
+
+  const wpanel = el("div", {
+    class: "weights"
+  });
+
+  wpanel.appendChild(
+    el(
+      "h2",
+      {},
+      "Ranking weights"
+    )
+  );
+
+  wpanel.appendChild(
+    el(
+      "p",
+      {},
+      "Enter the percentage you want to give each component. "
+      + "The values are normalized automatically if they do not add up to exactly 100%."
+    )
+  );
+
+
+  const weightLayout = el(
+    "div",
+    {
+      class: "weight-layout"
+    }
+  );
+
+
+  const weightFields = {};
+
+
+  const mkWeightInput = (label, key) => {
+
+    const row = el(
+      "div",
+      {
+        class: "weight-row"
+      }
+    );
+
+
+    row.appendChild(
+      el(
+        "label",
+        {},
+        label
+      )
+    );
+
+
+    const input = el(
+      "input",
+      {
+        type: "number",
+        min: "0",
+        max: "100",
+        step: "1",
+        value: String(state[key]),
+        "aria-label": label + " percentage"
+      }
+    );
+
+
+    input.addEventListener(
+      "input",
+      e => {
+
+        let value = Number(e.target.value);
+
+        if (!Number.isFinite(value)) {
+          return;
+        }
+
+        value = Math.max(
+          0,
+          Math.min(100, value)
+        );
+
+        state[key] = value;
+
+        e.target.value = value;
+
+        render();
+      }
+    );
+
+
+    row.appendChild(input);
+
+
+    row.appendChild(
+      el(
+        "span",
+        {
+          class: "pct"
+        },
+        "%"
+      )
+    );
+
+
+    weightFields[key] = input;
+
+
     return row;
   };
-  wpanel.appendChild(mkSlider('Desire', 'wDesire'));
-  wpanel.appendChild(mkSlider('Safety', 'wSafety'));
-  wpanel.appendChild(mkSlider('Ethics', 'wEthics'));
-  const resetBtn = el('button', { class: 'reset', onclick: () => { state.wDesire = 40; state.wSafety = 35; state.wEthics = 25; render(); } }, 'Reset weights');
-  wpanel.appendChild(resetBtn);
-  wrap.appendChild(wpanel);
 
-  // controls
-  const controls = el('div', { class: 'controls' });
-  const search = el('input', { type: 'text', placeholder: 'Search country...', value: state.search, oninput: e => { state.search = e.target.value; render(); } });
-  controls.appendChild(search);
 
-  const contSel = el('select', { onchange: e => { state.continent = e.target.value; render(); } });
-  ['All', 'Africa', 'Americas', 'Asia', 'Europe', 'Oceania', 'Other'].forEach(c => {
-    contSel.appendChild(el('option', { value: c, ...(state.continent === c ? { selected: 'selected' } : {}) }, c));
-  });
-  controls.appendChild(contSel);
+  const fieldWrap = el("div", {});
 
-  const toggle = el('div', { class: 'toggle-group' });
-  toggle.appendChild(el('button', { class: state.scope === 'mine' ? 'active' : '', onclick: () => { state.scope = 'mine'; render(); } }, 'My list'));
-  toggle.appendChild(el('button', { class: state.scope === 'all' ? 'active' : '', onclick: () => { state.scope = 'all'; render(); } }, 'All countries'));
-  controls.appendChild(toggle);
-  wrap.appendChild(controls);
 
-  if (bucketError) {
-    wrap.appendChild(el('div', { class: 'status warn' }, "Couldn't read your bucket list — showing safety and ethics only."));
-  } else if (state.scope === 'mine' && Object.keys(bucket).length === 0) {
-    wrap.appendChild(el('div', { class: 'empty' },
-      'Your bucket list is empty, so there\u2019s nothing to rank yet.',
-      el('br'), 'Add countries and places in the Bucket List tool, then come back here \u2014 or switch to "All countries" to rank purely on safety and ethics.'));
-    root.appendChild(wrap);
-    return;
-  }
+  fieldWrap.appendChild(
+    mkWeightInput(
+      "Desire",
+      "wDesire"
+    )
+  );
 
-  let rows = computeRows().filter(r => {
-    if (state.continent !== 'All' && r.continent !== state.continent) return false;
-    if (state.search && !r.name.toLowerCase().includes(state.search.toLowerCase())) return false;
-    return true;
-  });
 
-  rows.sort((a, b) => {
-    if (a.overall == null && b.overall == null) return a.name.localeCompare(b.name);
-    if (a.overall == null) return 1;
-    if (b.overall == null) return -1;
-    return b.overall - a.overall;
-  });
+  fieldWrap.appendChild(
+    mkWeightInput(
+      "Safety",
+      "wSafety"
+    )
+  );
 
-  if (rows.length === 0) {
-    wrap.appendChild(el('div', { class: 'empty' }, 'No matches.'));
-    root.appendChild(wrap);
-    return;
-  }
 
-  const list = el('div', {});
-  rows.forEach((r, i) => {
-    const row = el('div', { class: 'row', onclick: () => { expanded[r.name] = !expanded[r.name]; render(); } });
-    const top = el('div', { class: 'row-top' });
-    top.appendChild(el('span', { class: 'rank' }, String(i + 1).padStart(2, '0')));
-    const nameBlock = el('div', { class: 'name-block' });
-    const nameLine = el('div', { class: 'name-line' });
-    nameLine.appendChild(el('span', {}, el('span', { class: 'country-name' }, r.name), el('span', { class: 'continent-tag' }, r.continent)));
-    nameLine.appendChild(el('span', { class: 'overall-num' }, r.overall != null ? Math.round(r.overall) : '\u2014'));
-    nameBlock.appendChild(nameLine);
+  fieldWrap.appendChild(
+    mkWeightInput(
+      "Ethics",
+      "wEthics"
+    )
+  );
 
-    const seg = el('div', { class: 'segbar' });
-    const total = (r.desire || 0) * state.wDesire + (r.safety || 0) * state.wSafety + (r.ethics || 0) * state.wEthics || 1;
-    if (r.desire != null) seg.appendChild(el('div', { class: 'seg-desire', style: `width:${(r.desire * state.wDesire / total) * 100}%` }));
-    if (r.safety != null) seg.appendChild(el('div', { class: 'seg-safety', style: `width:${(r.safety * state.wSafety / total) * 100}%` }));
-    if (r.ethics != null) seg.appendChild(el('div', { class: 'seg-ethics', style: `width:${(r.ethics * state.wEthics / total) * 100}%` }));
-    nameBlock.appendChild(seg);
 
-    const meta = el('div', { class: 'meta-line' });
-    if (r.bl) meta.appendChild(el('span', {}, `${r.bl.total} place${r.bl.total === 1 ? '' : 's'} on your list`));
-    meta.appendChild(advisoryFlags(r.d));
-    nameBlock.appendChild(meta);
+  weightLayout.appendChild(fieldWrap);
 
-    top.appendChild(nameBlock);
-    row.appendChild(top);
 
-    if (expanded[r.name]) {
-      const detail = el('div', { class: 'detail' });
-      detail.appendChild(el('div', { class: 'subrow' }, el('span', {}, 'Desire'), el('span', { class: 'subval' }, r.desire != null ? Math.round(r.desire) : '\u2014')));
-      detail.appendChild(el('div', { class: 'subrow' }, el('span', {}, 'Safety'), el('span', { class: 'subval' }, r.safety != null ? Math.round(r.safety) : '\u2014')));
-      detail.appendChild(el('div', { class: 'subrow' }, el('span', {}, 'Ethics (Freedom House)'), el('span', { class: 'subval' }, r.ethics != null ? Math.round(r.ethics) : '\u2014')));
-      if (r.bl && r.bl.landmarks.length) {
-        const lm = el('div', { class: 'landmarks' });
-        r.bl.landmarks.slice().sort((a, b) => b.rating - a.rating).forEach(l => {
-          lm.appendChild(el('div', { class: 'landmark-item' + (l.visited ? ' visited' : '') },
-            el('span', {}, l.name), el('span', {}, '\u2605'.repeat(l.rating))));
-        });
-        detail.appendChild(lm);
-      }
-      row.appendChild(detail);
+  /* =======================================================
+     DONUT CHART
+     ======================================================= */
+
+  const chartWrap = el(
+    "div",
+    {
+      class: "weight-chart",
+      title: "Weight proportions"
     }
-    list.appendChild(row);
-  });
-  wrap.appendChild(list);
+  );
 
-  wrap.appendChild(el('div', { class: 'footnote' },
-    'Desire = your bucket-list ratings, normalized against your highest-scoring country. Safety = Global Peace Index + Women, Peace & Security Index, minus US/UK/Spain advisory penalties. Ethics = Freedom House score. Adjust the sliders above to change how much each counts toward the overall rank. Static snapshot \u2014 re-check official advisories before travel.'));
 
-  root.appendChild(wrap);
+  const svgNS = "http://www.w3.org/2000/svg";
+
+
+  const svg = document.createElementNS(
+    svgNS,
+    "svg"
+  );
+
+
+  svg.setAttribute(
+    "viewBox",
+    "0 0 120 120"
+  );
+
+
+  const bg = document.createElementNS(
+    svgNS,
+    "circle"
+  );
+
+
+  bg.setAttribute("cx", "60");
+  bg.setAttribute("cy", "60");
+  bg.setAttribute("r", "43");
+  bg.setAttribute("stroke", "#eeeeea");
+
+
+  svg.appendChild(bg);
+
+
+  const slices = {};
+
+
+  [
+    ["wDesire", "#a67c1b"],
+    ["wSafety", "#1f4b3f"],
+    ["wEthics", "#2c3e63"]
+  ].forEach(
+    ([key, color]) => {
+
+      const c =
+        document.createElementNS(
+          svgNS,
+          "circle"
+        );
+
+      c.setAttribute("cx", "60");
+      c.setAttribute("cy", "60");
+      c.setAttribute("r", "43");
+      c.setAttribute("stroke", color);
+
+      slices[key] = c;
+
+      svg.appendChild(c);
+    }
+  );
+
+
+  chartWrap.appendChild(svg);
+
+
+  chartWrap.appendChild(
+    el(
+      "div",
+      {
+        class: "center"
+      },
+      el(
+        "span",
+        {},
+        "100%"
+      ),
+      el(
+        "small",
+        {},
+        "normalized"
+      )
+    )
+  );
+
+
+  weightLayout.appendChild(chartWrap);
+
+  wpanel.appendChild(weightLayout);
+
+
+  const totalLabel = el(
+    "div",
+    {
+      class: "weight-total"
+    }
+  );
+
+
+  wpanel.appendChild(totalLabel);
+
+
+  function updateWeightChart() {
+
+    const total =
+      Number(state.wDesire) +
+      Number(state.wSafety) +
+      Number(state.wEthics);
+
+
+    let offset = 0;
+
+
+    const circ =
+      2 * Math.PI * 43;
+
+
+    [
+      ["wDesire"],
+      ["wSafety"],
+      ["wEthics"]
+    ].forEach(
+      ([key]) => {
+
+        const pct =
+          total
+            ? state[key] / total
+            : 0;
+
+
+        const c = slices[key];
+
+
+        c.setAttribute(
+          "stroke-dasharray",
+          `${pct * circ} ${circ}`
+        );
+
+
+        c.setAttribute(
+          "stroke-dashoffset",
+          `${-offset * circ}`
+        );
+
+
+        offset += pct;
+      }
+    );
+
+
+    totalLabel.textContent =
+      `Total: ${total}%${
+        total === 100
+          ? ""
+          : " — values are normalized in the ranking"
+      }`;
+
+
+    totalLabel.className =
+      "weight-total" +
+      (
+        total === 100
+          ? ""
+          : " warn"
+      );
+  }
+
+
+  updateWeightChart();
+
+
+  return wpanel;
 }
 
+
+/* =========================================================
+   CONTROLS
+   ========================================================= */
+
+function buildControls() {
+
+  const controls = el(
+    "div",
+    {
+      class: "controls"
+    }
+  );
+
+
+  const searchWrap = el(
+    "div",
+    {
+      class: "search"
+    }
+  );
+
+
+  const searchInput = el(
+    "input",
+    {
+      type: "search",
+      placeholder: "Search countries...",
+      value: state.search,
+      "aria-label": "Search countries"
+    }
+  );
+
+
+  searchInput.addEventListener(
+    "input",
+    e => {
+
+      state.search = e.target.value;
+
+      render();
+    }
+  );
+
+
+  searchWrap.appendChild(searchInput);
+
+
+  const sort = el(
+    "select",
+    {
+      class: "sort",
+      "aria-label": "Sort ranking"
+    }
+  );
+
+
+  [
+    ["overall", "Overall ranking"],
+    ["desire", "Desire"],
+    ["safety", "Safety"],
+    ["ethics", "Ethics"],
+    ["alphabetical", "Alphabetical"]
+  ].forEach(
+    ([value, label]) => {
+
+      const option = el(
+        "option",
+        {
+          value
+        },
+        label
+      );
+
+      if (state.sort === value) {
+        option.selected = true;
+      }
+
+      sort.appendChild(option);
+    }
+  );
+
+
+  sort.addEventListener(
+    "change",
+    e => {
+
+      state.sort = e.target.value;
+
+      render();
+    }
+  );
+
+
+  controls.appendChild(searchWrap);
+  controls.appendChild(sort);
+
+
+  return controls;
+}
+
+
+/* =========================================================
+   FORMATTERS
+   ========================================================= */
+
+function formatScore(value) {
+
+  if (value == null || !Number.isFinite(value)) {
+    return "—";
+  }
+
+  return Number(value).toFixed(1);
+}
+
+
+function clampPercent(value) {
+
+  if (value == null || !Number.isFinite(value)) {
+    return 0;
+  }
+
+  return Math.max(
+    0,
+    Math.min(100, value)
+  );
+}
+
+
+/* =========================================================
+   DETAIL ROW
+   ========================================================= */
+
+function makeDetailRow(item) {
+
+  const tr = el(
+    "tr",
+    {
+      class: "detail"
+    }
+  );
+
+
+  const td = el(
+    "td",
+    {
+      colspan: "6"
+    }
+  );
+
+
+  const inner = el(
+    "div",
+    {
+      class: "detail-inner"
+    }
+  );
+
+
+  const grid = el(
+    "div",
+    {
+      class: "detail-grid"
+    }
+  );
+
+
+  const desireCard = el(
+    "div",
+    {
+      class: "detail-card"
+    }
+  );
+
+
+  desireCard.appendChild(
+    el(
+      "h3",
+      {},
+      "Desire"
+    )
+  );
+
+
+  desireCard.appendChild(
+    el(
+      "div",
+      {
+        class: "big"
+      },
+      formatScore(item.desire)
+    )
+  );
+
+
+  const landmarkText =
+    item.totalLandmarks > 0
+      ? `${item.totalLandmarks} landmark${
+          item.totalLandmarks === 1
+            ? ""
+            : "s"
+        } listed; ${item.visitedLandmarks} visited`
+      : "No landmarks currently in the bucket list";
+
+
+  desireCard.appendChild(
+    el(
+      "p",
+      {},
+      landmarkText
+    )
+  );
+
+
+  const safetyCard = el(
+    "div",
+    {
+      class: "detail-card"
+    }
+  );
+
+
+  safetyCard.appendChild(
+    el(
+      "h3",
+      {},
+      "Safety"
+    )
+  );
+
+
+  safetyCard.appendChild(
+    el(
+      "div",
+      {
+        class: "big"
+      },
+      formatScore(item.safety)
+    )
+  );
+
+
+  safetyCard.appendChild(
+    el(
+      "p",
+      {},
+      "Combined GPI, WPS, and travel-advisory score."
+    )
+  );
+
+
+  const ethicsCard = el(
+    "div",
+    {
+      class: "detail-card"
+    }
+  );
+
+
+  ethicsCard.appendChild(
+    el(
+      "h3",
+      {},
+      "Ethics"
+    )
+  );
+
+
+  ethicsCard.appendChild(
+    el(
+      "div",
+      {
+        class: "big"
+      },
+      formatScore(item.ethics)
+    )
+  );
+
+
+  ethicsCard.appendChild(
+    el(
+      "p",
+      {},
+      "Freedom House score."
+    )
+  );
+
+
+  grid.appendChild(desireCard);
+  grid.appendChild(safetyCard);
+  grid.appendChild(ethicsCard);
+
+
+  inner.appendChild(grid);
+
+  td.appendChild(inner);
+
+  tr.appendChild(td);
+
+
+  return tr;
+}
+
+
+/* =========================================================
+   RANKING TABLE
+   ========================================================= */
+
+function buildTable(items) {
+
+  const table = el(
+    "table",
+    {
+      class: "table"
+    }
+  );
+
+
+  const thead = el("thead");
+
+
+  const headerRow = el("tr");
+
+
+  [
+    ["#", "rank"],
+    ["Country", "country"],
+    ["Continent", "continent"],
+    ["Overall", "score"],
+    ["Score", "score"],
+    ["", ""]
+  ].forEach(
+    ([label, cls]) => {
+
+      headerRow.appendChild(
+        el(
+          "th",
+          {
+            class: cls
+          },
+          label
+        )
+      );
+    }
+  );
+
+
+  thead.appendChild(headerRow);
+
+  table.appendChild(thead);
+
+
+  const tbody = el("tbody");
+
+
+  if (items.length === 0) {
+
+    const row = el("tr");
+
+    const cell = el(
+      "td",
+      {
+        colspan: "6",
+        class: "empty"
+      },
+      "No countries match your search."
+    );
+
+    row.appendChild(cell);
+
+    tbody.appendChild(row);
+
+    table.appendChild(tbody);
+
+    return table;
+  }
+
+
+  items.forEach(
+    (item, index) => {
+
+      const row = el("tr");
+
+
+      const rankCell = el(
+        "td",
+        {
+          class: "rank"
+        },
+        String(index + 1)
+      );
+
+
+      const countryCell = el(
+        "td",
+        {
+          class: "country"
+        }
+      );
+
+
+      const countryButton = el(
+        "button",
+        {
+          class: "country-button",
+          type: "button"
+        },
+        item.country
+      );
+
+
+      countryCell.appendChild(countryButton);
+
+
+      const continentCell = el(
+        "td",
+        {
+          class: "continent"
+        },
+        item.continent || "—"
+      );
+
+
+      const overallCell = el(
+        "td",
+        {
+          class: "score"
+        },
+        formatScore(item.overall)
+      );
+
+
+      const barCell = el(
+        "td",
+        {
+          class: "score"
+        }
+      );
+
+
+      const barWrap = el(
+        "div",
+        {
+          class: "bar-wrap"
+        }
+      );
+
+
+      const bar = el(
+        "div",
+        {
+          class: "bar"
+        }
+      );
+
+
+      const fill = el(
+        "div",
+        {
+          class: "bar-fill overall-fill"
+        }
+      );
+
+
+      fill.style.width =
+        clampPercent(item.overall) + "%";
+
+
+      bar.appendChild(fill);
+
+      barWrap.appendChild(bar);
+
+      barCell.appendChild(barWrap);
+
+
+      const actionCell = el(
+        "td",
+        {
+          class: "score"
+        }
+      );
+
+
+      const detailButton = el(
+        "button",
+        {
+          type: "button",
+          title: "Show details"
+        },
+        "＋"
+      );
+
+
+      actionCell.appendChild(detailButton);
+
+
+      row.appendChild(rankCell);
+      row.appendChild(countryCell);
+      row.appendChild(continentCell);
+      row.appendChild(overallCell);
+      row.appendChild(barCell);
+      row.appendChild(actionCell);
+
+
+      const detailRow =
+        makeDetailRow(item);
+
+
+      function toggleDetail() {
+
+        detailRow.classList.toggle("open");
+
+        detailButton.textContent =
+          detailRow.classList.contains("open")
+            ? "−"
+            : "＋";
+      }
+
+
+      countryButton.addEventListener(
+        "click",
+        toggleDetail
+      );
+
+
+      detailButton.addEventListener(
+        "click",
+        toggleDetail
+      );
+
+
+      tbody.appendChild(row);
+
+      tbody.appendChild(detailRow);
+    }
+  );
+
+
+  table.appendChild(tbody);
+
+
+  return table;
+}
+
+
+/* =========================================================
+   MAIN RENDER
+   ========================================================= */
+
+function render() {
+
+  root.innerHTML = "";
+
+
+  if (!bucketLoaded) {
+
+    root.appendChild(
+      el(
+        "div",
+        {
+          class: "empty"
+        },
+        "Loading..."
+      )
+    );
+
+    return;
+  }
+
+
+  if (bucketError) {
+
+    root.appendChild(
+      el(
+        "div",
+        {
+          class: "error"
+        },
+        "The bucket list could not be read from local storage. "
+        + "The ranking is still displaying the safety and ethics data, "
+        + "but Desire will be unavailable until the bucket list can be read."
+      )
+    );
+  }
+
+
+  root.appendChild(
+    buildWeightPanel()
+  );
+
+
+  root.appendChild(
+    buildControls()
+  );
+
+
+  const desire = computeDesire();
+
+
+  const countries =
+    getCountries();
+
+
+  const items = countries.map(
+    country => {
+
+      const safetyData =
+        DATA[country] || null;
+
+
+      const desireInfo =
+        desire[country] || {
+          score: 0,
+          total: 0,
+          visited: 0,
+          landmarks: []
+        };
+
+
+      const desireScore =
+        desireScoreForCountry(
+          desire,
+          country
+        );
+
+
+      const safety =
+        calculateSafety(
+          safetyData
+        );
+
+
+      const ethics =
+        ethicsScoreForCountry(
+          safetyData
+        );
+
+
+      const overall =
+        calculateOverall(
+          desireScore,
+          safety,
+          ethics
+        );
+
+
+      return {
+        country,
+
+        continent:
+          safetyData
+            ? safetyData.continent
+            : "",
+
+        desire:
+          desireScore,
+
+        safety,
+
+        ethics,
+
+        overall,
+
+        totalLandmarks:
+          desireInfo.total,
+
+        visitedLandmarks:
+          desireInfo.visited,
+
+        landmarks:
+          desireInfo.landmarks,
+
+        data:
+          safetyData
+      };
+    }
+  );
+
+
+  const filtered =
+    items.filter(
+      item => {
+
+        if (!state.search.trim()) {
+          return true;
+        }
+
+        return item.country
+          .toLowerCase()
+          .includes(
+            state.search
+              .trim()
+              .toLowerCase()
+          );
+      }
+    );
+
+
+  filtered.sort(
+    (a, b) => {
+
+      if (state.sort === "alphabetical") {
+        return a.country.localeCompare(
+          b.country
+        );
+      }
+
+
+      if (state.sort === "desire") {
+        return (
+          (b.desire || 0) -
+          (a.desire || 0)
+        );
+      }
+
+
+      if (state.sort === "safety") {
+        return (
+          (b.safety == null ? -Infinity : b.safety) -
+          (a.safety == null ? -Infinity : a.safety)
+        );
+      }
+
+
+      if (state.sort === "ethics") {
+        return (
+          (b.ethics == null ? -Infinity : b.ethics) -
+          (a.ethics == null ? -Infinity : a.ethics)
+        );
+      }
+
+
+      return (
+        (b.overall == null ? -Infinity : b.overall) -
+        (a.overall == null ? -Infinity : a.overall)
+      );
+    }
+  );
+
+
+  root.appendChild(
+    buildTable(filtered)
+  );
+
+
+  const note = el(
+    "div",
+    {
+      class: "note"
+    },
+    "Overall scores are weighted averages of the available "
+    + "Desire, Safety, and Ethics scores. If the percentages "
+    + "do not add to 100, they are normalized automatically."
+  );
+
+
+  root.appendChild(note);
+}
+
+
+/* =========================================================
+   START
+   ========================================================= */
+
 loadBucket();
+
 </script>
+
 </body>
 </html>
