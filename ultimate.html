@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Safest & Most Ethical Countries to Visit</title>
+<title>My Travel Bucket List</title>
 <style>
   html, body { margin:0; padding:0; background:#fff; }
   * { box-sizing: border-box; }
@@ -11,39 +11,38 @@
   .wrap { max-width: 900px; margin: 0 auto; padding: 2rem 1.1rem 3rem; }
   h1 { font-family: Georgia, 'Times New Roman', serif; font-weight:400; font-size: 30px; letter-spacing:-0.02em; margin:0 0 4px; }
   .asof { font-size:11px; color:#999; margin-bottom:10px; }
-  .nav { font-size:12.5px; margin-bottom:16px; }
+  .nav { font-size:12.5px; margin-bottom:24px; }
   .nav a { color:#111; text-decoration:none; border-bottom:1px solid #111; }
   .nav a:hover { opacity:0.6; }
-  .controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:14px; }
-  input[type=text] { flex:1 1 180px; padding:8px 10px; border:1px solid #ccc; font-size:14px; font-family:inherit; }
-  select { padding:8px 10px; border:1px solid #ccc; font-size:13px; font-family:inherit; background:#fff; }
-  .toggle-group { display:flex; border:1px solid #111; }
-  .toggle-group button { padding:8px 11px; font-size:12px; border:none; background:#fff; cursor:pointer; border-left:1px solid #111; white-space:nowrap; }
-  .toggle-group button:first-child { border-left:none; }
-  .toggle-group button.active { background:#111; color:#fff; }
+
+  .chart-row { display:flex; gap:32px; align-items:center; flex-wrap:wrap; margin-bottom:24px; }
+  .chart-row svg { flex-shrink:0; }
+  .legend { display:flex; flex-direction:column; gap:9px; font-size:13.5px; }
+  .legend-item { display:flex; align-items:center; gap:8px; cursor:pointer; padding:4px 8px; border-radius:3px; border:1px solid transparent; }
+  .legend-item:hover { background:#fafafa; }
+  .legend-item.active { border-color:#111; background:#fafafa; }
+  .legend-item.dim { opacity: 0.4; }
+  .swatch { width:12px; height:12px; border-radius:2px; flex-shrink:0; }
+  .legend-count { color:#999; font-size:12px; margin-left:auto; padding-left:16px; }
+  .legend-clear { font-size:11.5px; color:#999; text-decoration:underline; cursor:pointer; margin-top:4px; }
+  .pie-slice { cursor:pointer; transition: opacity 0.15s; }
+  .pie-slice.dim { opacity: 0.25; }
+
   table { width:100%; border-collapse: collapse; font-size:13.5px; }
   th, td { text-align:left; padding:7px 5px; border-bottom:1px solid #eee; }
-  th { font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em; color:#666; cursor:pointer; user-select:none; border-bottom:2px solid #111; white-space:nowrap; }
-  th.active { color:#111; }
-  th .arrow { font-size:9px; }
-  tr:hover td { background:#fafafa; }
+  th { font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em; color:#666; border-bottom:2px solid #111; white-space:nowrap; }
   .country-name { font-weight:600; }
   .continent-tag { font-size:9.5px; color:#999; }
   .score-bar-wrap { display:flex; align-items:center; gap:5px; }
   .score-bar { height:6px; width:44px; background:#eee; position:relative; flex-shrink:0; }
   .score-bar > div { height:100%; background:#111; }
-  .flag { display:inline-block; font-size:9.5px; padding:1px 4px; border-radius:2px; margin-right:2px; margin-bottom:2px; border:1px solid; white-space:nowrap; }
-  .flag.severe { background:#c0392b; border-color:#c0392b; color:#fff; }
-  .flag.mid { background:#fff8e6; border-color:#b8860b; color:#8a6300; }
   .na { color:#bbb; }
-  .rank-num { font-family: monospace; color:#999; font-size:11px; }
-  .bucket-star { cursor:pointer; font-size:15px; color:#ddd; margin-left:6px; user-select:none; }
-  .bucket-star.on { color:#c9a227; }
+  .tier-tag { font-size:10px; padding:2px 6px; border-radius:10px; color:#fff; white-space:nowrap; }
   .empty { text-align:center; color:#999; padding:2rem 0; }
   .footnote { font-size:10.5px; color:#aaa; margin-top:20px; line-height:1.5; }
   @media (max-width: 640px) {
     th, td { padding:5px 3px; font-size:11.5px; }
-    .score-bar { width:30px; }
+    .chart-row { flex-direction:column; align-items:flex-start; }
   }
 </style>
 </head>
@@ -56,6 +55,7 @@ const el = (tag, attrs, ...children) => {
   if (attrs) for (const k in attrs) {
     if (k === 'class') e.className = attrs[k];
     else if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else if (k === 'ns') { /* skip */ }
     else e.setAttribute(k, attrs[k]);
   }
   children.flat().forEach(c => {
@@ -64,12 +64,25 @@ const el = (tag, attrs, ...children) => {
   });
   return e;
 };
+const svgEl = (tag, attrs, ...children) => {
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  if (attrs) for (const k in attrs) {
+    if (k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else e.setAttribute(k, attrs[k]);
+  }
+  children.flat().forEach(c => { if (c) e.appendChild(c); });
+  return e;
+};
 
-// ALL_ROWS is recomputed on every render so edits to bucketList (via the star)
-// are reflected immediately and stay in sync with window.TRAVEL_DATA.
-function getRows() { return window.computeTravelRows(); }
+const TIER_ORDER = ['Safe', 'Moderate', 'Risky', 'Unrated'];
 
-let state = { search:'', continent:'All', sortKey:'safety', sortDir:'desc', hideAdvisory:false };
+let state = { activeTier: null }; // null = show all
+
+function getBucketRows() {
+  return window.computeTravelRows()
+    .filter(r => window.TRAVEL_DATA[r.name].bucketList)
+    .map(r => ({ ...r, tier: window.safetyTier(r.safety) }));
+}
 
 function fmt(n) { return n == null ? null : Math.round(n); }
 
@@ -85,15 +98,60 @@ function scoreBar(val) {
   return wrap;
 }
 
-function advisoryFlags(d) {
-  const wrap = el('div', {});
-  if (d.us === 'L4') wrap.appendChild(el('span',{class:'flag severe'},'US4'));
-  else if (d.us === 'L3') wrap.appendChild(el('span',{class:'flag mid'},'US3'));
-  if (d.uk === 'ALL') wrap.appendChild(el('span',{class:'flag severe'},'UK'));
-  else if (d.uk === 'ESS') wrap.appendChild(el('span',{class:'flag mid'},'UK ess.'));
-  if (d.es === 'ALL') wrap.appendChild(el('span',{class:'flag severe'},'ES'));
-  if (!wrap.childNodes.length) wrap.appendChild(el('span',{class:'na'},'—'));
-  return wrap;
+// Build an SVG donut chart. Clicking a slice or its legend row filters the table.
+function buildChart(rows) {
+  const counts = {};
+  TIER_ORDER.forEach(t => counts[t] = 0);
+  rows.forEach(r => counts[r.tier]++);
+  const total = rows.length;
+
+  const size = 220, cx = size/2, cy = size/2, rOuter = 100, rInner = 55;
+
+  const svg = svgEl('svg', {width: size, height: size, viewBox: `0 0 ${size} ${size}`});
+
+  if (total === 0) {
+    svg.appendChild(svgEl('circle', {cx, cy, r: rOuter, fill:'#f2f2f2'}));
+    svg.appendChild(svgEl('circle', {cx, cy, r: rInner, fill:'#fff'}));
+  } else {
+    let angleStart = -Math.PI/2;
+    TIER_ORDER.forEach(tier => {
+      const count = counts[tier];
+      if (count === 0) return;
+      const angleSlice = (count/total) * Math.PI * 2;
+      const angleEnd = angleStart + angleSlice;
+      const largeArc = angleSlice > Math.PI ? 1 : 0;
+
+      const x1o = cx + rOuter*Math.cos(angleStart), y1o = cy + rOuter*Math.sin(angleStart);
+      const x2o = cx + rOuter*Math.cos(angleEnd), y2o = cy + rOuter*Math.sin(angleEnd);
+      const x1i = cx + rInner*Math.cos(angleEnd), y1i = cy + rInner*Math.sin(angleEnd);
+      const x2i = cx + rInner*Math.cos(angleStart), y2i = cy + rInner*Math.sin(angleStart);
+
+      const d = `M ${x1o} ${y1o} A ${rOuter} ${rOuter} 0 ${largeArc} 1 ${x2o} ${y2o}
+                 L ${x1i} ${y1i} A ${rInner} ${rInner} 0 ${largeArc} 0 ${x2i} ${y2i} Z`;
+
+      const dim = state.activeTier && state.activeTier !== tier;
+      const path = svgEl('path', {
+        d, fill: window.TIER_COLORS[tier],
+        class: 'pie-slice' + (dim ? ' dim' : ''),
+        onclick: () => { state.activeTier = state.activeTier === tier ? null : tier; render(); }
+      });
+      const titleEl = document.createElementNS('http://www.w3.org/2000/svg','title');
+      titleEl.textContent = `${tier}: ${count}`;
+      path.appendChild(titleEl);
+      svg.appendChild(path);
+
+      angleStart = angleEnd;
+    });
+  }
+
+  const centerText = svgEl('text', {x: cx, y: cy-4, 'text-anchor':'middle', 'font-size':'22', 'font-weight':'600', fill:'#111'}, );
+  centerText.textContent = String(total);
+  svg.appendChild(centerText);
+  const centerLabel = svgEl('text', {x: cx, y: cy+14, 'text-anchor':'middle', 'font-size':'10', fill:'#999'});
+  centerLabel.textContent = total === 1 ? 'country' : 'countries';
+  svg.appendChild(centerLabel);
+
+  return { svg, counts };
 }
 
 function render() {
@@ -101,92 +159,72 @@ function render() {
   root.innerHTML = '';
   const wrap = el('div', {class:'wrap'});
 
-  wrap.appendChild(el('h1', {}, "Safest & Most Ethical Countries"));
-  wrap.appendChild(el('div', {class:'asof'}, "Snapshot: Sep 2026 · GPI + Women, Peace & Security Index + US/UK/ES advisories → Safety · Freedom House → Ethics"));
-  wrap.appendChild(el('div', {class:'nav'}, el('a', {href:'ultimate.html'}, "→ View my bucket list & safety chart")));
+  wrap.appendChild(el('h1', {}, "My Travel Bucket List"));
+  wrap.appendChild(el('div', {class:'asof'}, "Pulled live from data.js — mark a country's \"bucketList\" as true there (or star it on the safety page) to add it here."));
+  wrap.appendChild(el('div', {class:'nav'}, el('a', {href:'safety.html'}, "← Back to full safety & ethics rankings")));
 
-  const controls = el('div', {class:'controls'});
-  const search = el('input', {type:'text', placeholder:'Search country...', value: state.search, oninput: e => { state.search = e.target.value; render(); }});
-  controls.appendChild(search);
+  const rows = getBucketRows();
+  const { svg, counts } = buildChart(rows);
 
-  const contSel = el('select', {onchange: e => { state.continent = e.target.value; render(); }});
-  ['All','Africa','Americas','Asia','Europe','Oceania'].forEach(c => {
-    contSel.appendChild(el('option', {value:c, ...(state.continent===c?{selected:'selected'}:{})}, c));
+  const chartRow = el('div', {class:'chart-row'});
+  chartRow.appendChild(svg);
+
+  const legend = el('div', {class:'legend'});
+  TIER_ORDER.forEach(tier => {
+    const count = counts[tier];
+    const isActive = state.activeTier === tier;
+    const isDim = state.activeTier && !isActive;
+    const item = el('div', {
+      class: 'legend-item' + (isActive ? ' active':'') + (isDim ? ' dim':''),
+      onclick: () => { state.activeTier = state.activeTier === tier ? null : tier; render(); }
+    },
+      el('div', {class:'swatch', style:`background:${window.TIER_COLORS[tier]}`}),
+      el('span', {}, tier),
+      el('span', {class:'legend-count'}, String(count))
+    );
+    legend.appendChild(item);
   });
-  controls.appendChild(contSel);
+  if (state.activeTier) {
+    legend.appendChild(el('div', {class:'legend-clear', onclick: () => { state.activeTier = null; render(); }}, 'Show all tiers'));
+  }
+  chartRow.appendChild(legend);
+  wrap.appendChild(chartRow);
 
-  const toggle = el('div', {class:'toggle-group'});
-  toggle.appendChild(el('button', {class: !state.hideAdvisory ? 'active':'', onclick: () => { state.hideAdvisory=false; render(); }}, 'All'));
-  toggle.appendChild(el('button', {class: state.hideAdvisory ? 'active':'', onclick: () => { state.hideAdvisory=true; render(); }}, 'No advisories'));
-  controls.appendChild(toggle);
-
-  wrap.appendChild(controls);
-
-  let rows = getRows().filter(r => {
-    if (state.continent !== 'All' && r.continent !== state.continent) return false;
-    if (state.search && !r.name.toLowerCase().includes(state.search.toLowerCase())) return false;
-    if (state.hideAdvisory && (r.us || r.uk || r.es)) return false;
-    return true;
-  });
-
-  const sortKey = state.sortKey;
-  rows.sort((a,b) => {
-    let av = a[sortKey], bv = b[sortKey];
-    if (av == null && bv == null) return a.name.localeCompare(b.name);
-    if (av == null) return 1;
-    if (bv == null) return -1;
-    return state.sortDir === 'desc' ? bv - av : av - bv;
-  });
+  const visibleRows = rows
+    .filter(r => !state.activeTier || r.tier === state.activeTier)
+    .sort((a,b) => (b.overall ?? -1) - (a.overall ?? -1));
 
   const table = el('table', {});
-  const headDefs = [
-    {key:null, label:'#'},
-    {key:'name', label:'Country'},
-    {key:'safety', label:'Safety'},
-    {key:'ethics', label:'Ethics'},
-    {key:'overall', label:'Overall'},
-    {key:null, label:'Advisory'},
-    {key:null, label:'Bucket'},
-  ];
-  const thead = el('tr', {});
-  headDefs.forEach(h => {
-    const th = el('th', {class: h.key===sortKey ? 'active':''});
-    th.appendChild(document.createTextNode(h.label + ' '));
-    if (h.key === sortKey) th.appendChild(el('span',{class:'arrow'}, state.sortDir==='desc'?'▼':'▲'));
-    if (h.key) th.addEventListener('click', () => {
-      if (state.sortKey === h.key) state.sortDir = state.sortDir === 'desc' ? 'asc':'desc';
-      else { state.sortKey = h.key; state.sortDir = 'desc'; }
-      render();
-    });
-    thead.appendChild(th);
-  });
+  const thead = el('tr', {},
+    el('th', {}, 'Country'),
+    el('th', {}, 'Tier'),
+    el('th', {}, 'Safety'),
+    el('th', {}, 'Ethics'),
+    el('th', {}, 'Overall')
+  );
   table.appendChild(el('thead', {}, thead));
 
   const tbody = el('tbody', {});
-  if (rows.length === 0) {
-    tbody.appendChild(el('tr',{}, el('td',{colspan:'7', class:'empty'}, 'No matches.')));
+  if (visibleRows.length === 0) {
+    const msg = rows.length === 0
+      ? 'No countries on your bucket list yet — set "bucketList": true for a country in data.js, or star it on the safety page.'
+      : 'No bucket-list countries in this tier.';
+    tbody.appendChild(el('tr',{}, el('td',{colspan:'5', class:'empty'}, msg)));
   }
-  rows.forEach((r, i) => {
+  visibleRows.forEach(r => {
     const tr = el('tr', {});
-    tr.appendChild(el('td', {}, el('span',{class:'rank-num'}, String(i+1))));
     tr.appendChild(el('td', {}, el('div',{class:'country-name'}, r.name), el('div',{class:'continent-tag'}, r.continent)));
+    tr.appendChild(el('td', {}, el('span', {class:'tier-tag', style:`background:${window.TIER_COLORS[r.tier]}`}, r.tier)));
     tr.appendChild(el('td', {}, scoreBar(r.safety)));
     tr.appendChild(el('td', {}, scoreBar(r.ethics)));
     tr.appendChild(el('td', {}, scoreBar(r.overall)));
-    tr.appendChild(el('td', {}, advisoryFlags(r)));
-    const star = el('span', {
-      class: 'bucket-star' + (window.TRAVEL_DATA[r.name].bucketList ? ' on' : ''),
-      title: 'Toggle bucket list (this only persists for this browser tab reload — edit data.js to save permanently)',
-      onclick: () => { window.TRAVEL_DATA[r.name].bucketList = !window.TRAVEL_DATA[r.name].bucketList; render(); }
-    }, window.TRAVEL_DATA[r.name].bucketList ? '★' : '☆');
-    tr.appendChild(el('td', {}, star));
     tbody.appendChild(tr);
   });
   table.appendChild(tbody);
   wrap.appendChild(table);
 
   wrap.appendChild(el('div', {class:'footnote'},
-    "Safety = Global Peace Index + Women, Peace & Security Index (women's safety/inclusion/justice) − advisory penalties (US/UK/Spain). Ethics = Freedom House score. Sorted by Safety by default. Data lives in data.js — edit it to update both this page and the bucket-list page. The ☆ toggle here is a quick preview only; to keep a country on your bucket list permanently, set \"bucketList\": true for it in data.js."
+    "Tiers: Safe (score ≥ 70), Moderate (40–69), Risky (< 40), Unrated (missing data). Click a slice or legend row to filter the list; click again to clear. Scores computed the same way as the safety rankings page, from the shared data.js file."
   ));
 
   root.appendChild(wrap);
