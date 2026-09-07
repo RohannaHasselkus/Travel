@@ -139,6 +139,79 @@ const COUNTRY_CONTINENTS = [{"name":"Afghanistan","continent":"Asia"},{"name":"A
 const COUNTRIES = COUNTRY_CONTINENTS.map((c) => c.name);
 const CONTINENT_OF = Object.fromEntries(COUNTRY_CONTINENTS.map((c) => [c.name, c.continent]));
 
+/* ---------------------------------------------------------------------
+   Pre-established trip groupings. These are seeded automatically into
+   the "Grouped" view the first time it's used (or whenever the user's
+   group list is empty), so there's no manual grouping work to do.
+   Once seeded they behave like any other group — editable, removable,
+   etc. Based on a hand-curated "how would you actually travel these
+   countries" list, with Australia+New Zealand combined per request
+   (the source list kept them separate but flagged them as an obvious
+   combo). Hong Kong isn't in the country list here, so there's no
+   separate China+Hong Kong merge to make — Hong Kong would just be a
+   landmark/entry under China.
+--------------------------------------------------------------------- */
+const DEFAULT_GROUP_DEFS = [
+  { name: "Iberia", countries: ["Spain", "Portugal", "Andorra"] },
+  { name: "Italy + Microstates", countries: ["Italy", "San Marino", "Vatican City"] },
+  { name: "France + Monaco", countries: ["France", "Monaco"] },
+  { name: "Benelux", countries: ["Belgium", "Netherlands", "Luxembourg"] },
+  { name: "British Isles", countries: ["United Kingdom", "Ireland"] },
+  { name: "Alpine Europe", countries: ["Switzerland", "Liechtenstein", "Austria"] },
+  { name: "Germany + Czechia", countries: ["Germany", "Czechia"] },
+  { name: "Central Europe", countries: ["Poland", "Slovakia", "Hungary"] },
+  { name: "Balkans", countries: ["Slovenia", "Croatia", "Bosnia and Herzegovina", "Montenegro", "Serbia", "Kosovo", "North Macedonia", "Albania"] },
+  { name: "Romania + Moldova", countries: ["Romania", "Moldova"] },
+  { name: "Baltics", countries: ["Estonia", "Latvia", "Lithuania"] },
+  { name: "Nordic Scandinavia", countries: ["Denmark", "Sweden", "Norway"] },
+  { name: "Nordic North", countries: ["Finland", "Iceland"] },
+  { name: "Malta + Cyprus", countries: ["Malta", "Cyprus"] },
+  { name: "Caucasus", countries: ["Georgia", "Armenia", "Azerbaijan"] },
+  { name: "Levant", countries: ["Israel", "Palestine", "Jordan", "Lebanon", "Syria"] },
+  { name: "Arabian Peninsula", countries: ["Saudi Arabia", "Oman", "United Arab Emirates", "Qatar", "Bahrain", "Kuwait", "Yemen"] },
+  { name: "Central Asian Core", countries: ["Kazakhstan", "Kyrgyzstan", "Uzbekistan", "Tajikistan"] },
+  { name: "Himalayan", countries: ["Nepal", "Bhutan"] },
+  { name: "Pakistan + Bangladesh", countries: ["Pakistan", "Bangladesh"] },
+  { name: "Sri Lanka + Maldives", countries: ["Sri Lanka", "Maldives"] },
+  { name: "Korean Peninsula", countries: ["North Korea", "South Korea"] },
+  { name: "Mainland Southeast Asia", countries: ["Thailand", "Laos", "Cambodia", "Vietnam"] },
+  { name: "Malaysia + Singapore + Brunei", countries: ["Malaysia", "Singapore", "Brunei"] },
+  { name: "Maghreb", countries: ["Algeria", "Tunisia", "Libya"] },
+  { name: "Horn of Africa", countries: ["Eritrea", "Djibouti", "Ethiopia", "Somalia"] },
+  { name: "Nile/Sahel", countries: ["Sudan", "South Sudan", "Chad"] },
+  { name: "Senegambia", countries: ["Senegal", "Gambia"] },
+  { name: "Upper Guinea Coast", countries: ["Guinea", "Guinea-Bissau", "Sierra Leone", "Liberia"] },
+  { name: "Gulf of Guinea", countries: ["Ivory Coast", "Ghana", "Togo", "Benin", "Nigeria"] },
+  { name: "Sahel", countries: ["Mali", "Burkina Faso", "Niger", "Mauritania"] },
+  { name: "Central Africa", countries: ["Cameroon", "Central African Republic", "Republic of the Congo", "Democratic Republic of the Congo", "Gabon", "Equatorial Guinea"] },
+  { name: "Great Lakes", countries: ["Uganda", "Rwanda", "Burundi"] },
+  { name: "East African Safari", countries: ["Kenya", "Tanzania"] },
+  { name: "Southern Africa", countries: ["South Africa", "Namibia", "Botswana", "Zimbabwe", "Zambia"] },
+  { name: "Southern African Add-ons", countries: ["Lesotho", "Eswatini", "Mozambique", "Malawi"] },
+  { name: "Indian Ocean Africa", countries: ["Comoros", "Mauritius", "Seychelles"] },
+  { name: "Central America — North", countries: ["Guatemala", "Belize", "Honduras", "El Salvador"] },
+  { name: "Central America — South", countries: ["Nicaragua", "Costa Rica", "Panama"] },
+  { name: "Caribbean Greater Antilles", countries: ["Cuba", "Jamaica", "Haiti", "Dominican Republic"] },
+  { name: "Caribbean Lesser Antilles", countries: ["Dominica", "Grenada", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Barbados", "Trinidad and Tobago"] },
+  { name: "Guianas", countries: ["Guyana", "Suriname"] },
+  { name: "Northern Andes", countries: ["Colombia", "Ecuador"] },
+  { name: "Central Andes", countries: ["Peru", "Bolivia"] },
+  { name: "Southern Cone", countries: ["Chile", "Argentina", "Uruguay", "Paraguay"] },
+  { name: "Australia + New Zealand", countries: ["Australia", "New Zealand"] },
+  { name: "Melanesia", countries: ["Papua New Guinea", "Solomon Islands", "Vanuatu", "Fiji"] },
+  { name: "Western Pacific", countries: ["Palau", "Micronesia", "Marshall Islands", "Nauru"] },
+  { name: "Polynesia", countries: ["Samoa", "Tonga", "Tuvalu", "Kiribati"] },
+];
+
+function buildDefaultGroups() {
+  const out = {};
+  DEFAULT_GROUP_DEFS.forEach((g, i) => {
+    const id = `default-${i}-${g.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}`;
+    out[id] = { name: g.name, countries: g.countries.slice() };
+  });
+  return out;
+}
+
 const THEME = {
   bg: "#ffffff", fg: "#000000", border: "#000000",
   borderMuted: "#dddddd", borderFaint: "#eeeeee",
@@ -230,22 +303,45 @@ function BucketList() {
 
   useEffect(() => {
     (async () => {
+      let nextData = {};
+      let nextGroups = {};
       try {
         const res = await window.storage.get(STORAGE_KEY, false);
         const parsed = res ? JSON.parse(res.value) : {};
         if (parsed && (parsed.countries || parsed.groups)) {
           // current format: { countries: {...}, groups: {...} }
-          setData(parsed.countries || {});
-          setGroups(parsed.groups || {});
+          nextData = parsed.countries || {};
+          nextGroups = parsed.groups || {};
         } else {
           // legacy format: the stored object *was* the countries map
-          setData(parsed || {});
-          setGroups({});
+          nextData = parsed || {};
+          nextGroups = {};
         }
       } catch (e) {
-        setData({});
-        setGroups({});
+        nextData = {};
+        nextGroups = {};
       }
+
+      // Seed the pre-established trip groupings the first time there
+      // are no groups yet (fresh list, or every custom group was
+      // deleted). This makes the Grouped view work with zero manual
+      // setup; once seeded they're just normal editable groups.
+      if (Object.keys(nextGroups).length === 0) {
+        nextGroups = buildDefaultGroups();
+        try {
+          const res = await window.storage.set(
+            STORAGE_KEY,
+            JSON.stringify({ countries: nextData, groups: nextGroups }),
+            false
+          );
+          setSaveError(!res);
+        } catch (e) {
+          setSaveError(true);
+        }
+      }
+
+      setData(nextData);
+      setGroups(nextGroups);
       setLoaded(true);
     })();
   }, []);
@@ -356,6 +452,10 @@ function BucketList() {
       const score = memberCountries.reduce((s, c) => s + (scoreByCountry[c] || 0), 0);
       return { id, name: g.name, countries: memberCountries, score };
     })
+    // Only show groups that actually have at least one country you've
+    // added — otherwise the ~49 pre-established groups would all show
+    // up empty before you've added anything.
+    .filter((g) => g.countries.length > 0)
     .filter((g) => {
       if (!searchLower) return true;
       if (g.name.toLowerCase().includes(searchLower)) return true;
@@ -1073,7 +1173,7 @@ function BucketList() {
                 </button>
               </div>
               <p style={{ fontSize: 11, color: THEME.mutedLight, marginTop: 6 }}>
-                Countries you'd visit on the same trip. Open a group below to add countries — its score is the sum of theirs.
+                Countries you'd visit on the same trip are grouped automatically using a pre-set list of regions/trips. Open a group below to add or remove countries — its score is the sum of theirs.
               </p>
             </div>
 
