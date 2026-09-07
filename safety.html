@@ -37,10 +37,11 @@
   .flag.mid { background:#fff8e6; border-color:#b8860b; color:#8a6300; }
   .na { color:#bbb; }
   .rank-num { font-family: monospace; color:#999; font-size:11px; }
-  .bucket-star { cursor:pointer; font-size:15px; color:#ddd; margin-left:6px; user-select:none; }
+  .bucket-star { font-size:15px; color:#ddd; margin-left:6px; user-select:none; cursor:default; }
   .bucket-star.on { color:#c9a227; }
   .empty { text-align:center; color:#999; padding:2rem 0; }
   .footnote { font-size:10.5px; color:#aaa; margin-top:20px; line-height:1.5; }
+  .warn-banner { font-size:11.5px; color:#8a6300; background:#fff8e6; border:1px solid #f0d98c; padding:8px 10px; margin-bottom:14px; }
   @media (max-width: 640px) {
     th, td { padding:5px 3px; font-size:11.5px; }
     .score-bar { width:30px; }
@@ -65,11 +66,38 @@ const el = (tag, attrs, ...children) => {
   return e;
 };
 
-// ALL_ROWS is recomputed on every render so edits to bucketList (via the star)
-// are reflected immediately and stay in sync with window.TRAVEL_DATA.
-function getRows() { return window.computeTravelRows(); }
+// ---------------------------------------------------------------------
+// Bucket list data now comes straight from the Bucket List app's own
+// storage (the same key it reads/writes via window.storage), not from
+// a separate hand-maintained flag in data.js. This keeps the star here
+// in sync with whatever countries actually exist in your bucket list.
+// The Bucket List app persists with `window.storage.set(key, value, false)`,
+// which in the plain-browser shim writes to localStorage as
+// "personal:" + key. We read the same location directly.
+// ---------------------------------------------------------------------
+const BUCKET_STORAGE_KEY = "personal:bucket-list:data";
 
-let state = { search:'', continent:'All', sortKey:'safety', sortDir:'desc', hideAdvisory:false };
+function getBucketCountrySet() {
+  try {
+    const raw = localStorage.getItem(BUCKET_STORAGE_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    return new Set(Object.keys(parsed));
+  } catch (e) {
+    return new Set();
+  }
+}
+
+let bucketDataMissing = false;
+
+function getRows() {
+  const rows = window.computeTravelRows();
+  const bucketSet = getBucketCountrySet();
+  bucketDataMissing = bucketSet.size === 0;
+  return rows.map(r => ({ ...r, onBucketList: bucketSet.has(r.name) }));
+}
+
+let state = { search:'', continent:'All', sortKey:'safety', sortDir:'desc', hideAdvisory:false, bucketOnly:false };
 
 function fmt(n) { return n == null ? null : Math.round(n); }
 
@@ -103,7 +131,15 @@ function render() {
 
   wrap.appendChild(el('h1', {}, "Safest & Most Ethical Countries"));
   wrap.appendChild(el('div', {class:'asof'}, "Snapshot: Sep 2026 · GPI + Women, Peace & Security Index + US/UK/ES advisories → Safety · Freedom House → Ethics"));
-  wrap.appendChild(el('div', {class:'nav'}, el('a', {href:'ultimate.html'}, "→ View my bucket list & safety chart")));
+  wrap.appendChild(el('div', {class:'nav'}, el('a', {href:'ultimate.html'}, "→ View my bucket list & safety chart"), " · ", el('a', {href:'index.html'}, "→ Edit my bucket list")));
+
+  let rows = getRows();
+
+  if (bucketDataMissing) {
+    wrap.appendChild(el('div', {class:'warn-banner'},
+      "No bucket list found in this browser. Add countries on the Bucket List page (index.html) first — the star column here reads directly from that data."
+    ));
+  }
 
   const controls = el('div', {class:'controls'});
   const search = el('input', {type:'text', placeholder:'Search country...', value: state.search, oninput: e => { state.search = e.target.value; render(); }});
@@ -120,12 +156,18 @@ function render() {
   toggle.appendChild(el('button', {class: state.hideAdvisory ? 'active':'', onclick: () => { state.hideAdvisory=true; render(); }}, 'No advisories'));
   controls.appendChild(toggle);
 
+  const bucketToggle = el('div', {class:'toggle-group'});
+  bucketToggle.appendChild(el('button', {class: !state.bucketOnly ? 'active':'', onclick: () => { state.bucketOnly=false; render(); }}, 'All countries'));
+  bucketToggle.appendChild(el('button', {class: state.bucketOnly ? 'active':'', onclick: () => { state.bucketOnly=true; render(); }}, 'My bucket list'));
+  controls.appendChild(bucketToggle);
+
   wrap.appendChild(controls);
 
-  let rows = getRows().filter(r => {
+  rows = rows.filter(r => {
     if (state.continent !== 'All' && r.continent !== state.continent) return false;
     if (state.search && !r.name.toLowerCase().includes(state.search.toLowerCase())) return false;
     if (state.hideAdvisory && (r.us || r.uk || r.es)) return false;
+    if (state.bucketOnly && !r.onBucketList) return false;
     return true;
   });
 
@@ -175,10 +217,11 @@ function render() {
     tr.appendChild(el('td', {}, scoreBar(r.overall)));
     tr.appendChild(el('td', {}, advisoryFlags(r)));
     const star = el('span', {
-      class: 'bucket-star' + (window.TRAVEL_DATA[r.name].bucketList ? ' on' : ''),
-      title: 'Toggle bucket list (this only persists for this browser tab reload — edit data.js to save permanently)',
-      onclick: () => { window.TRAVEL_DATA[r.name].bucketList = !window.TRAVEL_DATA[r.name].bucketList; render(); }
-    }, window.TRAVEL_DATA[r.name].bucketList ? '★' : '☆');
+      class: 'bucket-star' + (r.onBucketList ? ' on' : ''),
+      title: r.onBucketList
+        ? 'On your bucket list (add/remove it from index.html)'
+        : 'Not on your bucket list (add it from index.html)'
+    }, r.onBucketList ? '★' : '☆');
     tr.appendChild(el('td', {}, star));
     tbody.appendChild(tr);
   });
@@ -186,13 +229,18 @@ function render() {
   wrap.appendChild(table);
 
   wrap.appendChild(el('div', {class:'footnote'},
-    "Safety = Global Peace Index + Women, Peace & Security Index (women's safety/inclusion/justice) − advisory penalties (US/UK/Spain). Ethics = Freedom House score. Sorted by Safety by default. Data lives in data.js — edit it to update both this page and the bucket-list page. The ☆ toggle here is a quick preview only; to keep a country on your bucket list permanently, set \"bucketList\": true for it in data.js."
+    "Safety = Global Peace Index + Women, Peace & Security Index (women's safety/inclusion/justice) − advisory penalties (US/UK/Spain). Ethics = Freedom House score. Sorted by Safety by default. Safety/ethics data lives in data.js — edit it to update this page. The ★ column reflects your actual Bucket List app data (read from this browser's local storage) — add or remove countries on index.html, not here."
   ));
 
   root.appendChild(wrap);
 }
 
 render();
+
+// Keep this page in sync if the bucket list changes in another tab.
+window.addEventListener('storage', (e) => {
+  if (e.key === BUCKET_STORAGE_KEY) render();
+});
 </script>
 </body>
 </html>
