@@ -15,13 +15,21 @@
   .nav a { color:#111; text-decoration:none; border-bottom:1px solid #111; }
   .nav a:hover { opacity:0.6; }
 
-  .controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:22px; padding:12px 0; border-top:1px solid #eee; border-bottom:1px solid #eee; }
+  .controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:14px; padding:12px 0; border-top:1px solid #eee; border-bottom:1px solid #eee; }
   input[type=text] { flex:1 1 180px; padding:8px 10px; border:1px solid #ccc; font-size:14px; font-family:inherit; outline:none; }
   .sort-group { display:flex; border:1px solid #111; }
   .sort-group button { padding:8px 11px; font-size:12px; border:none; background:#fff; cursor:pointer; border-left:1px solid #111; white-space:nowrap; }
   .sort-group button:first-child { border-left:none; }
   .sort-group button.active { background:#111; color:#fff; }
   .checkbox-label { display:flex; align-items:center; gap:6px; font-size:12px; color:#555; cursor:pointer; white-space:nowrap; }
+
+  .weights { display:flex; flex-wrap:wrap; gap:22px; margin-bottom:22px; padding:14px 14px; background:#fafafa; border:1px solid #eee; }
+  .weight-item { display:flex; flex-direction:column; gap:5px; flex:1 1 220px; min-width:200px; }
+  .weight-label-row { display:flex; justify-content:space-between; align-items:baseline; font-size:11.5px; }
+  .weight-label { text-transform:uppercase; letter-spacing:0.05em; color:#555; }
+  .weight-value { font-family:monospace; color:#111; }
+  .weight-item input[type=range] { width:100%; accent-color:#111; }
+  .weight-hint { font-size:10.5px; color:#aaa; line-height:1.4; }
 
   .tier-section { margin-bottom: 28px; }
   .tier-head { display:flex; align-items:center; gap:8px; border-bottom:2px solid #111; padding-bottom:7px; margin-bottom:2px; }
@@ -46,6 +54,7 @@
   .mini-bar > div { height:100%; background:#999; }
   .places-count { font-size:11px; color:#999; margin-top:3px; }
   .na { color:#ccc; }
+  .penalty-tag { font-size:9.5px; color:#b8860b; font-family:monospace; }
 
   .landmarks { padding: 2px 0 14px 28px; }
   .landmark-row { display:flex; align-items:center; gap:9px; padding:5px 0; border-bottom:1px solid #f5f5f5; font-size:13.5px; }
@@ -57,6 +66,18 @@
   .rating-dots span.on { background:#111; }
   .no-landmarks { font-size:12.5px; color:#bbb; font-style:italic; padding:6px 0 12px; }
   .edit-hint { font-size:11px; color:#bbb; padding-bottom:6px; }
+
+  .avoid-section { margin-top: 36px; border:1px solid #eee; }
+  .avoid-toggle { display:flex; align-items:center; gap:8px; padding:12px 14px; cursor:pointer; background:#fdfaf9; }
+  .avoid-toggle .tier-dot { background:#c0392b; }
+  .avoid-toggle .avoid-title { font-family: Georgia, serif; font-size:13.5px; text-transform:uppercase; letter-spacing:0.06em; color:#7a2a22; }
+  .avoid-toggle .avoid-count { margin-left:auto; font-size:11.5px; color:#b98; font-family:monospace; }
+  .avoid-toggle .avoid-chevron { color:#b98; font-size:11px; }
+  .avoid-list { padding: 0 14px 12px; }
+  .avoid-row { display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px solid #f7f0ee; font-size:13px; }
+  .avoid-row .avoid-name { font-family: Georgia, serif; }
+  .avoid-row .avoid-reason { font-family:monospace; font-size:11px; color:#a86; white-space:nowrap; }
+  .avoid-note { font-size:11px; color:#c98; padding:8px 14px 12px; line-height:1.5; }
 
   .empty { text-align:center; color:#999; padding:2.5rem 0; font-size:13.5px; }
   .footnote { font-size:10.5px; color:#aaa; margin-top:24px; line-height:1.6; }
@@ -105,7 +126,8 @@ window.storage = window.storage || {
   },
 };
 
-const STORAGE_KEY = "bucket-list:data"; // must match index.html exactly
+const STORAGE_KEY = "bucket-list:data";       // must match index.html exactly
+const WEIGHTS_KEY = "bucket-list:weights";    // this page's tunable weights
 
 const CATEGORY_COLOR = {
   landscapes: "#4a7c59",
@@ -113,8 +135,6 @@ const CATEGORY_COLOR = {
   museums: "#3b5b92",
   culture: "#a83a4b",
 };
-
-const TIER_ORDER = ["Safe", "Moderate", "Risky", "Unrated"];
 
 const el = (tag, attrs, ...children) => {
   const e = document.createElement(tag);
@@ -132,7 +152,15 @@ const el = (tag, attrs, ...children) => {
 
 let bucketData = {};       // raw data written by index.html
 let lastRaw = null;        // for change detection
-let state = { search: "", sortKey: "interest", hideVisited: false, expanded: {} };
+let state = {
+  search: "",
+  sortKey: "blended",       // 'blended' | 'interest' | 'safety' | 'ethics'
+  hideVisited: false,
+  expanded: {},
+  avoidOpen: false,
+  ethicsWeight: window.DEFAULT_ETHICS_WEIGHT,
+  safetyWeight: window.DEFAULT_SAFETY_WEIGHT,
+};
 
 function computeInterest(landmarks) {
   const list = landmarks || [];
@@ -161,18 +189,32 @@ function buildRows() {
     };
     const landmarks = (bucketData[name] || {}).landmarks || [];
     const interest = computeInterest(landmarks);
+
+    const zone = window.travelZone(t.safety);
+    const riskPenalty = window.computeRiskPenalty(t.safety, state.safetyWeight);
+    const ethicsAdjustment = window.computeEthicsAdjustment(t.ethics, state.ethicsWeight);
+    const blended = interest.score + ethicsAdjustment - riskPenalty;
+
     return {
       ...t,
       landmarks,
       interestScore: interest.score,
       totalPlaces: interest.total,
       visitedPlaces: interest.visited,
-      tier: window.safetyTier(t.safety),
+      zone,
+      riskPenalty,
+      ethicsAdjustment,
+      blended,
     };
   });
 }
 
 function fmt(n) { return n == null ? null : Math.round(n); }
+function fmtSigned(n) {
+  if (n == null) return "—";
+  const r = Math.round(n * 10) / 10;
+  return (r > 0 ? "+" : "") + r;
+}
 
 function miniBar(val) {
   const wrap = el('div', {});
@@ -215,6 +257,22 @@ function renderLandmarks(row) {
 function renderRow(row, idx) {
   const isOpen = !!state.expanded[row.name];
   const rowEl = el('div', { class: 'row' });
+  const statCluster = el('div', { class: 'stat-cluster' },
+    el('div', { class: 'stat' },
+      el('span', { class: 'stat-label' }, 'Safety'),
+      miniBar(row.safety),
+      row.riskPenalty > 0.05 ? el('span', { class: 'penalty-tag' }, `−${fmt(row.riskPenalty * 10) / 10}`) : null
+    ),
+    el('div', { class: 'stat' },
+      el('span', { class: 'stat-label' }, 'Ethics'),
+      miniBar(row.ethics),
+      row.ethicsAdjustment ? el('span', { class: 'penalty-tag', style: row.ethicsAdjustment > 0 ? 'color:#1a7a3c' : 'color:#c0392b' }, fmtSigned(row.ethicsAdjustment)) : null
+    ),
+    el('div', { class: 'stat' },
+      el('span', { class: 'stat-label' }, state.sortKey === 'blended' ? 'Score' : 'Interest'),
+      el('span', { class: 'interest-badge' }, String(state.sortKey === 'blended' ? Math.round(row.blended) : row.interestScore))
+    )
+  );
   const head = el('div', {
     class: 'row-head',
     onclick: () => { state.expanded[row.name] = !isOpen; render(); }
@@ -227,20 +285,7 @@ function renderRow(row, idx) {
           el('span', { class: 'country-name' }, row.name),
           el('span', { class: 'continent-tag' }, row.continent)
         ),
-        el('div', { class: 'stat-cluster' },
-          el('div', { class: 'stat' },
-            el('span', { class: 'stat-label' }, 'Safety'),
-            miniBar(row.safety)
-          ),
-          el('div', { class: 'stat' },
-            el('span', { class: 'stat-label' }, 'Ethics'),
-            miniBar(row.ethics)
-          ),
-          el('div', { class: 'stat' },
-            el('span', { class: 'stat-label' }, 'Interest'),
-            el('span', { class: 'interest-badge' }, String(row.interestScore))
-          )
-        )
+        statCluster
       ),
       el('div', { class: 'places-count' },
         row.totalPlaces === 0
@@ -254,6 +299,37 @@ function renderRow(row, idx) {
   return rowEl;
 }
 
+function renderAvoidSection(avoidRows) {
+  const section = el('div', { class: 'avoid-section' });
+  const toggle = el('div', {
+    class: 'avoid-toggle',
+    onclick: () => { state.avoidOpen = !state.avoidOpen; render(); }
+  },
+    el('span', { class: 'avoid-chevron' }, state.avoidOpen ? '▼' : '▶'),
+    el('span', { class: 'tier-dot' }),
+    el('span', { class: 'avoid-title' }, 'Avoid — major risk'),
+    el('span', { class: 'avoid-count' }, String(avoidRows.length))
+  );
+  section.appendChild(toggle);
+  if (state.avoidOpen) {
+    const list = el('div', { class: 'avoid-list' });
+    avoidRows
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .forEach(row => {
+        list.appendChild(el('div', { class: 'avoid-row' },
+          el('span', { class: 'avoid-name' }, row.name),
+          el('span', { class: 'avoid-reason' }, `safety ${fmt(row.safety)}`)
+        ));
+      });
+    section.appendChild(list);
+    section.appendChild(el('div', { class: 'avoid-note' },
+      `These fall below the major-risk cutoff (safety < ${window.MAJOR_RISK_CUTOFF}) and are kept out of the ranked list entirely — no interest or ethics score buys them back in. Adjust MAJOR_RISK_CUTOFF in data.js if you want to move that line.`
+    ));
+  }
+  return section;
+}
+
 function render() {
   const root = document.getElementById('root');
   root.innerHTML = '';
@@ -261,7 +337,7 @@ function render() {
 
   wrap.appendChild(el('h1', {}, "Final Ranking"));
   wrap.appendChild(el('div', { class: 'asof' },
-    "Countries come from what you've added on the Raw Ranking page. Grouped by safety/ethics tier (from data.js), ranked within each tier by your interest score — the total rating of places you still want to see there."
+    "Countries come from what you've added on the Raw Ranking page. Major-risk countries are set aside below; everything else is ranked by interest, lightly adjusted for safety and ethics using the sliders below."
   ));
   wrap.appendChild(el('div', { class: 'nav' },
     el('a', { href: 'index.html' }, '← Raw Ranking'),
@@ -275,13 +351,17 @@ function render() {
   }));
 
   const sortGroup = el('div', { class: 'sort-group' });
-  [{ key: 'interest', label: 'By Interest' }, { key: 'safety', label: 'By Safety' }, { key: 'ethics', label: 'By Ethics' }]
-    .forEach(s => {
-      sortGroup.appendChild(el('button', {
-        class: state.sortKey === s.key ? 'active' : '',
-        onclick: () => { state.sortKey = s.key; render(); }
-      }, s.label));
-    });
+  [
+    { key: 'blended', label: 'Blended' },
+    { key: 'interest', label: 'By Interest' },
+    { key: 'safety', label: 'By Safety' },
+    { key: 'ethics', label: 'By Ethics' },
+  ].forEach(s => {
+    sortGroup.appendChild(el('button', {
+      class: state.sortKey === s.key ? 'active' : '',
+      onclick: () => { state.sortKey = s.key; render(); }
+    }, s.label));
+  });
   controls.appendChild(sortGroup);
 
   controls.appendChild(el('label', { class: 'checkbox-label' },
@@ -293,7 +373,37 @@ function render() {
   ));
   wrap.appendChild(controls);
 
-  const sortField = state.sortKey === 'interest' ? 'interestScore' : state.sortKey;
+  // ---- weight sliders ----
+  const weights = el('div', { class: 'weights' });
+  weights.appendChild(el('div', { class: 'weight-item' },
+    el('div', { class: 'weight-label-row' },
+      el('span', { class: 'weight-label' }, 'Ethics weight'),
+      el('span', { class: 'weight-value' }, `±${state.ethicsWeight.toFixed(1)} pts`)
+    ),
+    el('input', {
+      type: 'range', min: '0', max: '20', step: '0.5', value: String(state.ethicsWeight),
+      oninput: e => { state.ethicsWeight = parseFloat(e.target.value); render(); },
+      onchange: () => saveWeights(),
+    }),
+    el('div', { class: 'weight-hint' }, "How much a great or troubling ethics score can swing a country's rank. A cool-but-imperfect country can still win on interest.")
+  ));
+  weights.appendChild(el('div', { class: 'weight-item' },
+    el('div', { class: 'weight-label-row' },
+      el('span', { class: 'weight-label' }, 'Risk sensitivity'),
+      el('span', { class: 'weight-value' }, `−${state.safetyWeight.toFixed(1)} pts max`)
+    ),
+    el('input', {
+      type: 'range', min: '0', max: '20', step: '0.5', value: String(state.safetyWeight),
+      oninput: e => { state.safetyWeight = parseFloat(e.target.value); render(); },
+      onchange: () => saveWeights(),
+    }),
+    el('div', { class: 'weight-hint' }, `Max cost of "slight risk" (safety between ${window.MAJOR_RISK_CUTOFF}–${window.SAFE_THRESHOLD}). Fades to 0 once safety clears ${window.SAFE_THRESHOLD}. Major risk below ${window.MAJOR_RISK_CUTOFF} is excluded outright, not penalized.`)
+  ));
+  wrap.appendChild(weights);
+
+  const sortFieldMap = { blended: 'blended', interest: 'interestScore', safety: 'safety', ethics: 'ethics' };
+  const sortField = sortFieldMap[state.sortKey];
+
   let rows = buildRows().filter(r =>
     !state.search || r.name.toLowerCase().includes(state.search.toLowerCase())
   );
@@ -306,33 +416,57 @@ function render() {
     return;
   }
 
-  TIER_ORDER.forEach(tier => {
-    const tierRows = rows
-      .filter(r => r.tier === tier)
-      .sort((a, b) => {
-        const av = a[sortField], bv = b[sortField];
-        if (av == null && bv == null) return a.name.localeCompare(b.name);
-        if (av == null) return 1;
-        if (bv == null) return -1;
-        return bv - av || a.name.localeCompare(b.name);
-      });
-    if (tierRows.length === 0) return;
+  const goRows = rows.filter(r => r.zone === 'go');
+  const avoidRows = rows.filter(r => r.zone === 'avoid');
 
-    const section = el('div', { class: 'tier-section' });
-    section.appendChild(el('div', { class: 'tier-head' },
-      el('span', { class: 'tier-dot', style: `background:${window.TIER_COLORS[tier]}` }),
-      el('span', { class: 'tier-title' }, tier),
-      el('span', { class: 'tier-count' }, String(tierRows.length))
-    ));
-    tierRows.forEach((row, i) => section.appendChild(renderRow(row, i)));
-    wrap.appendChild(section);
+  const sortedGo = goRows.slice().sort((a, b) => {
+    const av = a[sortField], bv = b[sortField];
+    if (av == null && bv == null) return a.name.localeCompare(b.name);
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    return bv - av || a.name.localeCompare(b.name);
   });
 
+  if (sortedGo.length === 0) {
+    wrap.appendChild(el('div', { class: 'empty' }, "No matches outside the major-risk list."));
+  } else {
+    const section = el('div', { class: 'tier-section' });
+    section.appendChild(el('div', { class: 'tier-head' },
+      el('span', { class: 'tier-dot', style: 'background:#1a7a3c' }),
+      el('span', { class: 'tier-title' }, 'Ready to explore'),
+      el('span', { class: 'tier-count' }, String(sortedGo.length))
+    ));
+    sortedGo.forEach((row, i) => section.appendChild(renderRow(row, i)));
+    wrap.appendChild(section);
+  }
+
+  if (avoidRows.length > 0) {
+    wrap.appendChild(renderAvoidSection(avoidRows));
+  }
+
   wrap.appendChild(el('div', { class: 'footnote' },
-    "Tiers come from data.js (Safe ≥ 70, Moderate 40–69, Risky < 40, Unrated = missing data). Interest score = sum of your 1–5 ratings for places you haven't marked visited yet, from the Raw Ranking page. This page updates automatically when you add or rate places there."
+    `Scoring: interest = sum of your 1–5 ratings for unvisited places. Ethics adjustment is a soft bonus/malus centered on a neutral midpoint (Freedom House 50), capped by the ethics slider — great culture can outweigh a middling score. Risk penalty only applies between safety ${window.MAJOR_RISK_CUTOFF}–${window.SAFE_THRESHOLD} (slight risk), scaling up as safety drops, capped by the risk slider; above ${window.SAFE_THRESHOLD} there's no penalty at all. Below ${window.MAJOR_RISK_CUTOFF} (major risk) a country is excluded outright — no score buys it back onto the list. "Blended" sorts by interest + ethics adjustment − risk penalty; the other sort buttons rank by a single raw stat instead. This page updates automatically when you add or rate places on the Raw Ranking page.`
   ));
 
   root.appendChild(wrap);
+}
+
+async function saveWeights() {
+  try {
+    await window.storage.set(WEIGHTS_KEY, JSON.stringify({
+      ethicsWeight: state.ethicsWeight,
+      safetyWeight: state.safetyWeight,
+    }), false);
+  } catch (e) { /* non-fatal */ }
+}
+
+async function loadWeights() {
+  try {
+    const res = await window.storage.get(WEIGHTS_KEY, false);
+    const saved = JSON.parse(res.value);
+    if (typeof saved.ethicsWeight === 'number') state.ethicsWeight = saved.ethicsWeight;
+    if (typeof saved.safetyWeight === 'number') state.safetyWeight = saved.safetyWeight;
+  } catch (e) { /* no saved weights yet — use defaults */ }
 }
 
 /* ---- reactivity: poll storage, plus instant updates via the storage
@@ -351,7 +485,10 @@ async function refresh(force) {
   render();
 }
 
-refresh(true);
+(async () => {
+  await loadWeights();
+  await refresh(true);
+})();
 setInterval(() => refresh(false), 2000);
 window.addEventListener('storage', (e) => {
   if (!e.key || e.key.indexOf(STORAGE_KEY) !== -1) refresh(true);
