@@ -452,6 +452,19 @@ function BucketList() {
   // --- Grouped view data -------------------------------------------------
   const groupedCountryNames = new Set(Object.values(groups).flatMap((g) => g.countries));
 
+  // Countries can deliberately belong to more than one group (e.g. Bulgaria
+  // could realistically be part of a Balkans trip or a Romania+Moldova trip
+  // — it borders both) — that's treated as a menu of possible combos, not
+  // an error. This map lets the UI show "also in: X, Y" instead of silently
+  // double-counting without explanation.
+  const groupsByCountry = {};
+  Object.values(groups).forEach((g) => {
+    g.countries.forEach((c) => {
+      if (!groupsByCountry[c]) groupsByCountry[c] = [];
+      groupsByCountry[c].push(g.name);
+    });
+  });
+
   const ungroupedRows = visibleRows.filter((r) => !groupedCountryNames.has(r.name));
 
   const groupRows = Object.entries(groups)
@@ -882,29 +895,36 @@ function BucketList() {
           </button>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: g.countries.length ? 10 : 0 }}>
-          {g.countries.map((c) => (
-            <span
-              key={c}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-                padding: "4px 6px 4px 10px",
-                border: `1px solid ${THEME.borderMuted}`,
-                background: THEME.panel,
-                fontSize: 12,
-              }}
-            >
-              {c}
-              <button
-                onClick={() => removeCountryFromGroup(id, c)}
-                aria-label={`Remove ${c} from ${g.name}`}
-                style={{ border: "none", background: "none", cursor: "pointer", color: THEME.mutedFaint, padding: 0, display: "flex" }}
+          {g.countries.map((c) => {
+            const others = (groupsByCountry[c] || []).filter((n) => n !== g.name);
+            return (
+              <span
+                key={c}
+                title={others.length ? `Also in: ${others.join(", ")}` : undefined}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: "4px 6px 4px 10px",
+                  border: `1px solid ${THEME.borderMuted}`,
+                  background: THEME.panel,
+                  fontSize: 12,
+                }}
               >
-                <X size={11} />
-              </button>
-            </span>
-          ))}
+                {c}
+                {others.length > 0 && (
+                  <span style={{ fontSize: 10, color: THEME.mutedLight, whiteSpace: "nowrap" }}>+{others.length}</span>
+                )}
+                <button
+                  onClick={() => removeCountryFromGroup(id, c)}
+                  aria-label={`Remove ${c} from ${g.name}`}
+                  style={{ border: "none", background: "none", cursor: "pointer", color: THEME.mutedFaint, padding: 0, display: "flex" }}
+                >
+                  <X size={11} />
+                </button>
+              </span>
+            );
+          })}
         </div>
         <div style={{ position: "relative" }}>
           <input
@@ -1012,30 +1032,40 @@ function BucketList() {
                 {g.countries
                   .slice()
                   .sort((a, b) => (scoreByCountry[b] || 0) - (scoreByCountry[a] || 0))
-                  .map((c) => (
-                    <div
-                      key={c}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        padding: "6px 0",
-                        borderBottom: `1px solid ${THEME.borderFaint}`,
-                      }}
-                    >
-                      <span style={{ flex: 1, fontSize: 14 }}>{c}</span>
-                      <span style={{ fontFamily: "monospace", fontSize: 12, color: THEME.mutedLight }}>
-                        {scoreByCountry[c] || 0}
-                      </span>
-                      <button
-                        onClick={() => removeCountryFromGroup(g.id, c)}
-                        aria-label={`Take ${c} out of ${g.name}`}
-                        style={{ border: "none", background: "none", cursor: "pointer", color: THEME.mutedFaint, padding: 2 }}
+                  .map((c) => {
+                    const others = (groupsByCountry[c] || []).filter((n) => n !== g.name);
+                    return (
+                      <div
+                        key={c}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          padding: "6px 0",
+                          borderBottom: `1px solid ${THEME.borderFaint}`,
+                        }}
                       >
-                        <X size={13} />
-                      </button>
-                    </div>
-                  ))}
+                        <span style={{ flex: 1, fontSize: 14 }} title={others.length ? `Also counted in: ${others.join(", ")}` : undefined}>
+                          {c}
+                          {others.length > 0 && (
+                            <span style={{ fontSize: 10, color: THEME.mutedLight, marginLeft: 6 }}>
+                              also in {others.join(", ")}
+                            </span>
+                          )}
+                        </span>
+                        <span style={{ fontFamily: "monospace", fontSize: 12, color: THEME.mutedLight }}>
+                          {scoreByCountry[c] || 0}
+                        </span>
+                        <button
+                          onClick={() => removeCountryFromGroup(g.id, c)}
+                          aria-label={`Take ${c} out of ${g.name}`}
+                          style={{ border: "none", background: "none", cursor: "pointer", color: THEME.mutedFaint, padding: 2 }}
+                        >
+                          <X size={13} />
+                        </button>
+                      </div>
+                    );
+                  })}
               </div>
             )}
             <div style={{ position: "relative" }}>
@@ -1302,7 +1332,7 @@ function BucketList() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
               <p style={{ fontSize: 11, color: THEME.mutedLight, margin: 0, flex: 1 }}>
                 {manageMode
-                  ? "This is the underlying dataset of groupings — rename a group, add or remove any country (whether or not it's on your list yet), delete groups you don't want, or add new ones. Your edits are saved and used everywhere in this view."
+                  ? "This is the underlying dataset of groupings — rename a group, add or remove any country (whether or not it's on your list yet), delete groups you don't want, or add new ones. Your edits are saved and used everywhere in this view. A country can belong to more than one group if you decide that's realistic (e.g. Bulgaria bordering both the Balkans and Romania) — its score will count in each group it's part of, and any overlap is flagged with a small \"+N\" badge. Nothing is added to more than one group automatically."
                   : "Countries you'd visit on the same trip are grouped using an editable dataset of regions/trips. Open a group below to add or remove countries you're tracking — its score is the sum of theirs."}
               </p>
               <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
