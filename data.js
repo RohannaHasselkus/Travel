@@ -75,49 +75,81 @@ window.TIER_COLORS = { Safe: "#1a7a3c", Moderate: "#b8860b", Risky: "#c0392b", U
    COMPOSITE RANKING MODEL (used by ultimate.html)
    ------------------------------------------------------------
    Philosophy:
-     - Safety is a GATE, not a spectrum, but only at the extreme.
-       Below MAJOR_RISK_CUTOFF a country is "major risk" and is
-       excluded from the ranked list entirely — no amount of
-       interest or ethics buys it back in.
+     - Safety is a GATE, but only at the extreme. Below
+       MAJOR_RISK_CUTOFF a country is "major risk" and is excluded
+       from the ranked list entirely — no amount of interest or
+       ethics buys it back in.
      - Between the cutoff and SAFE_THRESHOLD, safety is "slight
-       risk" — acceptable, but it should still cost a little. It
-       applies a small graduated penalty (bigger the closer you
-       are to the cutoff, zero once you reach SAFE_THRESHOLD).
-     - Ethics is NOT a gate. It's a soft, spectrum-style bonus or
+       risk" — acceptable, but it should still cost something. It
+       applies a graduated PERCENTAGE cut to that country's own
+       interest score (bigger the closer you are to the cutoff,
+       zero once you reach SAFE_THRESHOLD). Because it's a % of
+       that country's own score rather than a flat number of
+       points, it scales sensibly whether a country has 10 rated
+       landmarks or 2 — a country you're genuinely excited about
+       can still survive a mild safety knock, while it meaningfully
+       hurts a country you're lukewarm on.
+     - Ethics is NEVER a gate, at any level — it only scales the
+       score up or down. It's a soft, spectrum-style % bonus or
        malus centered on a neutral midpoint (50 on the Freedom
-       House scale) — a country with a great, compelling culture
-       can outweigh a middling ethics score.
-     - Both the ethics influence and the risk penalty are capped
-       by user-tunable weights (sliders in the UI), so neither
-       one can quietly dominate the interest score.
+       House scale). A country with a compelling culture can still
+       outweigh a mediocre-to-poor ethics score if your interest in
+       it is high enough — the bonus/malus is proportional, not a
+       flat override.
+     - Both the ethics swing and the risk cut are percentages of
+       the country's own interest score, and both are capped by
+       user-tunable weights (sliders in the UI, expressed as a max
+       % rather than a max number of points) so neither one can
+       quietly dominate regardless of how big or small the
+       underlying interest score is.
    ============================================================ */
-window.MAJOR_RISK_CUTOFF = 25;   // safety below this => excluded ("Avoid")
+window.MAJOR_RISK_CUTOFF = 25;   // safety below this => excluded ("Avoid"), no override possible
 window.SAFE_THRESHOLD = 65;      // safety at/above this => zero risk penalty
-window.DEFAULT_ETHICS_WEIGHT = 8;  // max +/- points ethics can swing the score
-window.DEFAULT_SAFETY_WEIGHT = 6;  // max points the graduated risk penalty can cost
+window.DEFAULT_ETHICS_WEIGHT = 15; // max % ethics can swing the score, up or down
+window.DEFAULT_SAFETY_WEIGHT = 20; // max % the graduated risk penalty can cut the score
 
 // Returns 'avoid' (major risk, excluded from ranking) or 'go' (rankable).
 // Unrated safety is treated as 'go' — we don't punish missing data.
+// Ethics never affects this — ethics only scales, it never excludes.
 window.travelZone = function travelZone(safety) {
   if (safety == null) return "go";
   return safety < window.MAJOR_RISK_CUTOFF ? "avoid" : "go";
 };
 
-// Graduated penalty for the "slight risk" zone. 0 once safe, scales
-// up to maxPenalty as safety approaches the major-risk cutoff.
-// Returns 0 for unrated safety (unknown isn't treated as risky).
+// --- Legacy flat-point versions (kept for backwards compatibility with
+// any other page that may still call these; ultimate.html now uses the
+// percentage-based *Frac versions below instead). ---
 window.computeRiskPenalty = function computeRiskPenalty(safety, maxPenalty) {
   if (safety == null) return 0;
   if (safety >= window.SAFE_THRESHOLD) return 0;
-  if (safety < window.MAJOR_RISK_CUTOFF) return maxPenalty; // shouldn't be ranked anyway
+  if (safety < window.MAJOR_RISK_CUTOFF) return maxPenalty;
   const span = window.SAFE_THRESHOLD - window.MAJOR_RISK_CUTOFF;
   const frac = (window.SAFE_THRESHOLD - safety) / span;
   return frac * maxPenalty;
 };
 
-// Soft ethics adjustment, centered at 50 (neutral). High ethics is a
-// bonus, low ethics is a malus, capped by maxWeight in either direction.
 window.computeEthicsAdjustment = function computeEthicsAdjustment(ethics, maxWeight) {
   if (ethics == null) return 0;
   return ((ethics - 50) / 50) * maxWeight;
+};
+
+// --- Percentage-based versions used by ultimate.html ---
+// Returns a fraction between 0 and (maxPenaltyPct/100): the share of a
+// country's own interest score to cut for being in the "slight risk"
+// safety band. 0 once safety clears SAFE_THRESHOLD.
+window.computeRiskPenaltyFrac = function computeRiskPenaltyFrac(safety, maxPenaltyPct) {
+  if (safety == null) return 0;
+  if (safety >= window.SAFE_THRESHOLD) return 0;
+  const clampedSafety = Math.max(safety, window.MAJOR_RISK_CUTOFF);
+  const span = window.SAFE_THRESHOLD - window.MAJOR_RISK_CUTOFF;
+  const frac = (window.SAFE_THRESHOLD - clampedSafety) / span;
+  return frac * (maxPenaltyPct / 100);
+};
+
+// Returns a fraction between -(maxWeightPct/100) and +(maxWeightPct/100):
+// the share of a country's own interest score to add or subtract based on
+// how far its ethics score sits from the neutral midpoint (50).
+window.computeEthicsAdjustmentFrac = function computeEthicsAdjustmentFrac(ethics, maxWeightPct) {
+  if (ethics == null) return 0;
+  return ((ethics - 50) / 50) * (maxWeightPct / 100);
 };
