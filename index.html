@@ -150,6 +150,15 @@ const CONTINENT_OF = Object.fromEntries(COUNTRY_CONTINENTS.map((c) => [c.name, c
    combo). Hong Kong isn't in the country list here, so there's no
    separate China+Hong Kong merge to make — Hong Kong would just be a
    landmark/entry under China.
+
+   Revised per user feedback: groups should reflect realistic travel
+   patterns (would you fly here on its own, or only as part of a
+   regional trip?), generally capped at 2-4 countries, with a few
+   deliberate exceptions for remote micro-nations you'd only ever visit
+   as a cluster. Previously oversized "regional dumps" (7-8 countries)
+   were split into smaller, still-realistic sub-groups, and a handful
+   of mismatched pairings (places that don't actually share a route)
+   were broken out to standalone.
 --------------------------------------------------------------------- */
 const DEFAULT_GROUP_DEFS = [
   { name: "Iberia", countries: ["Spain", "Portugal", "Andorra"] },
@@ -160,30 +169,26 @@ const DEFAULT_GROUP_DEFS = [
   { name: "Alpine Europe", countries: ["Switzerland", "Liechtenstein", "Austria"] },
   { name: "Germany + Czechia", countries: ["Germany", "Czechia"] },
   { name: "Central Europe", countries: ["Poland", "Slovakia", "Hungary"] },
-  { name: "Balkans", countries: ["Slovenia", "Croatia", "Bosnia and Herzegovina", "Montenegro", "Serbia", "Kosovo", "North Macedonia", "Albania"] },
+  { name: "Western Balkans", countries: ["Slovenia", "Croatia", "Bosnia and Herzegovina", "Montenegro"] },
+  { name: "Southern Balkans", countries: ["Serbia", "Kosovo", "North Macedonia", "Albania"] },
   { name: "Romania + Moldova", countries: ["Romania", "Moldova"] },
   { name: "Baltics", countries: ["Estonia", "Latvia", "Lithuania"] },
   { name: "Nordic Scandinavia", countries: ["Denmark", "Sweden", "Norway"] },
-  { name: "Nordic North", countries: ["Finland", "Iceland"] },
-  { name: "Malta + Cyprus", countries: ["Malta", "Cyprus"] },
   { name: "Caucasus", countries: ["Georgia", "Armenia", "Azerbaijan"] },
   { name: "Levant", countries: ["Israel", "Palestine", "Jordan", "Lebanon", "Syria"] },
-  { name: "Arabian Peninsula", countries: ["Saudi Arabia", "Oman", "United Arab Emirates", "Qatar", "Bahrain", "Kuwait", "Yemen"] },
+  { name: "Gulf States", countries: ["United Arab Emirates", "Qatar", "Bahrain", "Kuwait", "Oman"] },
   { name: "Central Asian Core", countries: ["Kazakhstan", "Kyrgyzstan", "Uzbekistan", "Tajikistan"] },
   { name: "Himalayan", countries: ["Nepal", "Bhutan"] },
-  { name: "Pakistan + Bangladesh", countries: ["Pakistan", "Bangladesh"] },
   { name: "Sri Lanka + Maldives", countries: ["Sri Lanka", "Maldives"] },
-  { name: "Korean Peninsula", countries: ["North Korea", "South Korea"] },
   { name: "Mainland Southeast Asia", countries: ["Thailand", "Laos", "Cambodia", "Vietnam"] },
   { name: "Malaysia + Singapore + Brunei", countries: ["Malaysia", "Singapore", "Brunei"] },
   { name: "Maghreb", countries: ["Algeria", "Tunisia", "Libya"] },
-  { name: "Horn of Africa", countries: ["Eritrea", "Djibouti", "Ethiopia", "Somalia"] },
-  { name: "Nile/Sahel", countries: ["Sudan", "South Sudan", "Chad"] },
   { name: "Senegambia", countries: ["Senegal", "Gambia"] },
   { name: "Upper Guinea Coast", countries: ["Guinea", "Guinea-Bissau", "Sierra Leone", "Liberia"] },
   { name: "Gulf of Guinea", countries: ["Ivory Coast", "Ghana", "Togo", "Benin", "Nigeria"] },
   { name: "Sahel", countries: ["Mali", "Burkina Faso", "Niger", "Mauritania"] },
-  { name: "Central Africa", countries: ["Cameroon", "Central African Republic", "Republic of the Congo", "Democratic Republic of the Congo", "Gabon", "Equatorial Guinea"] },
+  { name: "Central Africa — Coastal", countries: ["Cameroon", "Gabon", "Equatorial Guinea"] },
+  { name: "Central Africa — Congo Basin", countries: ["Republic of the Congo", "Democratic Republic of the Congo", "Central African Republic"] },
   { name: "Great Lakes", countries: ["Uganda", "Rwanda", "Burundi"] },
   { name: "East African Safari", countries: ["Kenya", "Tanzania"] },
   { name: "Southern Africa", countries: ["South Africa", "Namibia", "Botswana", "Zimbabwe", "Zambia"] },
@@ -192,7 +197,8 @@ const DEFAULT_GROUP_DEFS = [
   { name: "Central America — North", countries: ["Guatemala", "Belize", "Honduras", "El Salvador"] },
   { name: "Central America — South", countries: ["Nicaragua", "Costa Rica", "Panama"] },
   { name: "Caribbean Greater Antilles", countries: ["Cuba", "Jamaica", "Haiti", "Dominican Republic"] },
-  { name: "Caribbean Lesser Antilles", countries: ["Dominica", "Grenada", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Barbados", "Trinidad and Tobago"] },
+  { name: "Caribbean Leewards", countries: ["Dominica", "Saint Kitts and Nevis", "Saint Lucia"] },
+  { name: "Caribbean Windwards", countries: ["Saint Vincent and the Grenadines", "Grenada", "Barbados"] },
   { name: "Guianas", countries: ["Guyana", "Suriname"] },
   { name: "Northern Andes", countries: ["Colombia", "Ecuador"] },
   { name: "Central Andes", countries: ["Peru", "Bolivia"] },
@@ -297,6 +303,8 @@ function BucketList() {
   const [landmarkDrafts, setLandmarkDrafts] = useState({});
   const [groupNameDraft, setGroupNameDraft] = useState("");
   const [groupCountryQueries, setGroupCountryQueries] = useState({});
+  const [manageMode, setManageMode] = useState(false);
+  const [newGroupCountryQueries, setNewGroupCountryQueries] = useState({});
   const [toast, setToast] = useState("");
   const toastTimer = useRef(null);
   const [lightbox, setLightbox] = useState(null); // { title, caption, url }
@@ -453,7 +461,7 @@ function BucketList() {
       return { id, name: g.name, countries: memberCountries, score };
     })
     // Only show groups that actually have at least one country you've
-    // added — otherwise the ~49 pre-established groups would all show
+    // added — otherwise the pre-established groups would all show
     // up empty before you've added anything.
     .filter((g) => g.countries.length > 0)
     .filter((g) => {
@@ -567,6 +575,38 @@ function BucketList() {
     if (!g) return;
     const nextGroups = { ...groups, [id]: { ...g, countries: g.countries.filter((c) => c !== country) } };
     persist(data, nextGroups);
+  };
+
+  // Unlike addCountryToGroup (used in the normal Grouped view, which only
+  // offers countries you've already added to your list), this lets the
+  // group *dataset* itself be edited independently of your personal list —
+  // any of the 195 countries can be added to a group here, since the
+  // grouping is a reusable travel-planning reference, not tied to what
+  // you've already started tracking.
+  const addCountryToGroupAny = (id, country) => {
+    const g = groups[id];
+    if (!g || g.countries.includes(country)) return;
+    const nextGroups = { ...groups, [id]: { ...g, countries: [...g.countries, country] } };
+    persist(data, nextGroups);
+  };
+
+  const renameGroup = (id, name) => {
+    const g = groups[id];
+    if (!g) return;
+    const nextGroups = { ...groups, [id]: { ...g, name } };
+    setGroups(nextGroups); // update immediately for snappy typing
+    persist(data, nextGroups);
+  };
+
+  const resetGroupsToDefault = () => {
+    if (
+      !window.confirm(
+        "Reset all groupings to the built-in defaults? This replaces every group and any edits you've made to them."
+      )
+    )
+      return;
+    const next = buildDefaultGroups();
+    persist(data, next, "Reset groupings to defaults");
   };
 
   const continentGroups = {};
@@ -793,6 +833,134 @@ function BucketList() {
           </button>
         </div>
         {isOpen && renderLandmarks(row)}
+      </div>
+    );
+  };
+
+  const renderManageGroupRow = (id, g) => {
+    const query = newGroupCountryQueries[id] || "";
+    const available = COUNTRIES.filter(
+      (c) => !g.countries.includes(c) && c.toLowerCase().includes(query.toLowerCase())
+    );
+    return (
+      <div key={`manage:${id}`} style={{ border: `1px solid ${THEME.borderMuted}`, background: THEME.groupBg, padding: 12, marginBottom: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          <input
+            type="text"
+            value={g.name}
+            onChange={(e) => renameGroup(id, e.target.value)}
+            style={{
+              flex: 1,
+              padding: "8px 10px",
+              border: `1px solid ${THEME.border}`,
+              fontSize: 14,
+              fontFamily: "Georgia, serif",
+              fontStyle: "italic",
+              outline: "none",
+              background: THEME.bg,
+              color: THEME.fg,
+            }}
+          />
+          <button
+            onClick={() => removeGroup(id)}
+            aria-label={`Delete group ${g.name}`}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "8px 10px",
+              border: `1px solid ${THEME.inputBorder}`,
+              background: THEME.panel,
+              color: THEME.muted,
+              fontSize: 12,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <X size={13} />
+            Delete
+          </button>
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: g.countries.length ? 10 : 0 }}>
+          {g.countries.map((c) => (
+            <span
+              key={c}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "4px 6px 4px 10px",
+                border: `1px solid ${THEME.borderMuted}`,
+                background: THEME.panel,
+                fontSize: 12,
+              }}
+            >
+              {c}
+              <button
+                onClick={() => removeCountryFromGroup(id, c)}
+                aria-label={`Remove ${c} from ${g.name}`}
+                style={{ border: "none", background: "none", cursor: "pointer", color: THEME.mutedFaint, padding: 0, display: "flex" }}
+              >
+                <X size={11} />
+              </button>
+            </span>
+          ))}
+        </div>
+        <div style={{ position: "relative" }}>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setNewGroupCountryQueries({ ...newGroupCountryQueries, [id]: e.target.value })}
+            placeholder="Add any country to this group..."
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              padding: "7px 10px",
+              border: `1px solid ${THEME.inputBorder}`,
+              fontSize: 13,
+              fontFamily: "inherit",
+              outline: "none",
+              background: THEME.panel,
+              color: THEME.fg,
+            }}
+          />
+          {query.trim().length > 0 && (
+            <div style={{ border: `1px solid ${THEME.border}`, borderTop: "none", maxHeight: 180, overflowY: "auto", background: THEME.panel, position: "absolute", left: 0, right: 0, zIndex: 5 }}>
+              {available.length === 0 && (
+                <div style={{ padding: "8px 10px", fontSize: 12, color: THEME.mutedLight }}>No matches</div>
+              )}
+              {available.slice(0, 8).map((c) => (
+                <button
+                  key={c}
+                  onClick={() => {
+                    addCountryToGroupAny(id, c);
+                    setNewGroupCountryQueries({ ...newGroupCountryQueries, [id]: "" });
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "8px 10px",
+                    background: THEME.panel,
+                    border: "none",
+                    borderTop: `1px solid ${THEME.borderFaint}`,
+                    cursor: "pointer",
+                    fontSize: 13,
+                    fontFamily: "inherit",
+                    color: THEME.fg,
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = THEME.hover)}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = THEME.panel)}
+                >
+                  <Plus size={13} />
+                  {c}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     );
   };
@@ -1131,6 +1299,46 @@ function BucketList() {
 
         {view === "grouped" && (
           <section>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
+              <p style={{ fontSize: 11, color: THEME.mutedLight, margin: 0, flex: 1 }}>
+                {manageMode
+                  ? "This is the underlying dataset of groupings — rename a group, add or remove any country (whether or not it's on your list yet), delete groups you don't want, or add new ones. Your edits are saved and used everywhere in this view."
+                  : "Countries you'd visit on the same trip are grouped using an editable dataset of regions/trips. Open a group below to add or remove countries you're tracking — its score is the sum of theirs."}
+              </p>
+              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                {manageMode && (
+                  <button
+                    onClick={resetGroupsToDefault}
+                    style={{
+                      padding: "7px 10px",
+                      fontSize: 12,
+                      border: `1px solid ${THEME.inputBorder}`,
+                      background: THEME.panel,
+                      color: THEME.muted,
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Reset to defaults
+                  </button>
+                )}
+                <button
+                  onClick={() => setManageMode((m) => !m)}
+                  style={{
+                    padding: "7px 10px",
+                    fontSize: 12,
+                    border: `1px solid ${THEME.border}`,
+                    background: manageMode ? THEME.chipActiveBg : THEME.chipInactiveBg,
+                    color: manageMode ? THEME.chipActiveFg : THEME.fg,
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {manageMode ? "Done editing" : "Edit groupings"}
+                </button>
+              </div>
+            </div>
+
             <div style={{ marginBottom: 20 }}>
               <label style={{ display: "block", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: THEME.muted, marginBottom: 8 }}>
                 New group
@@ -1172,24 +1380,35 @@ function BucketList() {
                   Create
                 </button>
               </div>
-              <p style={{ fontSize: 11, color: THEME.mutedLight, marginTop: 6 }}>
-                Countries you'd visit on the same trip are grouped automatically using a pre-set list of regions/trips. Open a group below to add or remove countries — its score is the sum of theirs.
-              </p>
             </div>
 
-            {combinedGrouped.length === 0 && (
-              <p style={{ fontSize: 14, color: THEME.mutedLight, padding: "2rem 0", textAlign: "center" }}>
-                {countryNames.length === 0 ? "No countries yet." : "No matches."}
-              </p>
-            )}
-
-            {combinedGrouped.length > 0 && (
+            {manageMode ? (
+              Object.keys(groups).length === 0 ? (
+                <p style={{ fontSize: 14, color: THEME.mutedLight, padding: "2rem 0", textAlign: "center" }}>
+                  No groups yet — create one above, or reset to the built-in defaults.
+                </p>
+              ) : (
+                Object.entries(groups)
+                  .sort((a, b) => a[1].name.localeCompare(b[1].name))
+                  .map(([id, g]) => renderManageGroupRow(id, g))
+              )
+            ) : (
               <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: `1px solid ${THEME.border}`, paddingBottom: 8, marginBottom: 4 }}>
-                  <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: THEME.muted }}>Ranking</span>
-                  <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: THEME.muted }}>Score</span>
-                </div>
-                {combinedGrouped.map((entry, i) => (entry.kind === "group" ? renderGroupRow(entry, i) : renderRow(entry, i)))}
+                {combinedGrouped.length === 0 && (
+                  <p style={{ fontSize: 14, color: THEME.mutedLight, padding: "2rem 0", textAlign: "center" }}>
+                    {countryNames.length === 0 ? "No countries yet." : "No matches."}
+                  </p>
+                )}
+
+                {combinedGrouped.length > 0 && (
+                  <>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: `1px solid ${THEME.border}`, paddingBottom: 8, marginBottom: 4 }}>
+                      <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: THEME.muted }}>Ranking</span>
+                      <span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: THEME.muted }}>Score</span>
+                    </div>
+                    {combinedGrouped.map((entry, i) => (entry.kind === "group" ? renderGroupRow(entry, i) : renderRow(entry, i)))}
+                  </>
+                )}
               </>
             )}
           </section>
