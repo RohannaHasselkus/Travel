@@ -1,0 +1,55 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@keyframes bl-spin {
+  to { transform: rotate(360deg); }
+}
+
+.bl-spin {
+  animation: bl-spin 1s linear infinite;
+}
+
+/* --- Site nav ------------------------------------------------------- */
+
+.main-nav {
+  display: flex;
+  justify-content: center;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 1.75rem 1.5rem 0;
+  box-sizing: border-box;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+.main-nav a {
+  padding: 10px 20px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  color: #000000;
+  background: #ffffff;
+  border: 1px solid #000000;
+  border-left: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.main-nav a:first-child {
+  border-left: 1px solid #000000;
+}
+
+.main-nav a:hover {
+  background: #f2f2f2;
+}
+
+.main-nav a[aria-current="page"] {
+  background: #000000;
+  color: #ffffff;
+}
