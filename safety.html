@@ -118,8 +118,6 @@ function render() {
     ));
   }
 
-  wrap.appendChild(el('div', {class:'subnav'}, el('a', {href:'ultimate.html'}, "→ View my bucket list & safety chart"), " · ", el('a', {href:'index.html'}, "→ Edit my bucket list")));
-
   let rows = getRows();
 
   if (bucketDataMissing) {
