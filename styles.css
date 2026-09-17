@@ -341,3 +341,398 @@ tr:hover td {
     width: 30px;
   }
 }
+
+/* ---------------------------------------------------------------------
+   Final Ranking page (extends the shared .wrap, .controls,
+   .toggle-group, .continent-tag, .na, .title-row/.info-btn/.info-panel
+   rules above rather than redefining them)
+--------------------------------------------------------------------- */
+.ml-tag {
+  margin-left: 6px;
+}
+
+.panel-controls {
+  padding: 12px 0;
+  border-top: 1px solid #eeeeee;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #555555;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.view-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.weights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  margin-bottom: 22px;
+  padding: 14px;
+  background: #fafafa;
+  border: 1px solid #eeeeee;
+}
+
+.weight-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1 1 220px;
+  min-width: 200px;
+}
+
+.weight-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 11.5px;
+}
+
+.weight-label {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #555555;
+}
+
+.weight-value {
+  font-family: monospace;
+  color: #000000;
+}
+
+.weight-item input[type="range"] {
+  width: 100%;
+  accent-color: #000000;
+}
+
+.tier-section {
+  margin-bottom: 28px;
+}
+
+.tier-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 2px solid #000000;
+  padding-bottom: 7px;
+  margin-bottom: 2px;
+}
+
+.tier-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tier-title {
+  font-family: Georgia, serif;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.tier-count {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: #888888;
+  font-family: monospace;
+}
+
+.row {
+  border-bottom: 1px solid #eeeeee;
+}
+
+.row-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 0;
+  cursor: pointer;
+}
+
+.rank {
+  font-family: monospace;
+  font-size: 12px;
+  color: #bbbbbb;
+  width: 18px;
+  flex-shrink: 0;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: #888888;
+  font-size: 11px;
+  width: 10px;
+}
+
+.row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.row-title-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.entry-name {
+  font-family: Georgia, serif;
+  font-size: 16.5px;
+}
+
+.group-name {
+  font-style: italic;
+}
+
+.group-tag {
+  font-size: 10px;
+  color: #888888;
+  margin-left: 6px;
+  font-family: monospace;
+}
+
+.stat-cluster {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.stat-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #aaaaaa;
+}
+
+.stat-value {
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.interest-badge {
+  font-family: monospace;
+  font-size: 15px;
+  font-weight: 700;
+  background: #000000;
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 2px;
+  min-width: 28px;
+  text-align: center;
+}
+
+.mini-bar {
+  height: 5px;
+  width: 36px;
+  background: #eeeeee;
+  margin-top: 2px;
+}
+
+.mini-bar > div {
+  height: 100%;
+  background: #888888;
+}
+
+.places-count {
+  font-size: 11px;
+  color: #888888;
+  margin-top: 3px;
+}
+
+.penalty-tag {
+  font-size: 9.5px;
+  color: #b8860b;
+  font-family: monospace;
+}
+
+.landmarks {
+  padding: 2px 0 14px 28px;
+}
+
+.landmark-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 0;
+  border-bottom: 1px solid #f5f5f5;
+  font-size: 13.5px;
+}
+
+.landmark-row.visited {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+.cat-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid #dddddd;
+}
+
+.landmark-name {
+  flex: 1;
+}
+
+.rating-dots {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.rating-dots span {
+  width: 9px;
+  height: 9px;
+  border: 1px solid #000000;
+}
+
+.rating-dots span.on {
+  background: #000000;
+}
+
+.no-landmarks {
+  font-size: 12.5px;
+  color: #bbbbbb;
+  font-style: italic;
+  padding: 6px 0 12px;
+}
+
+.edit-hint {
+  font-size: 11px;
+  color: #bbbbbb;
+  padding-bottom: 6px;
+}
+
+.group-body {
+  padding: 4px 0 12px 28px;
+}
+
+.group-members-head {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #aaaaaa;
+  padding: 6px 0;
+}
+
+.group-members {
+  border: 1px solid #eeeeee;
+}
+
+.group-members .row {
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.group-members .row:last-child {
+  border-bottom: none;
+}
+
+.group-members .row-head {
+  padding: 9px 8px;
+}
+
+.avoid-section {
+  margin-top: 36px;
+  border: 1px solid #eeeeee;
+}
+
+.avoid-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  background: #fdfaf9;
+}
+
+.avoid-toggle .tier-dot {
+  background: #c0392b;
+}
+
+.avoid-toggle .avoid-title {
+  font-family: Georgia, serif;
+  font-size: 13.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #7a2a22;
+}
+
+.avoid-toggle .avoid-count {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: #b98;
+  font-family: monospace;
+}
+
+.avoid-toggle .avoid-chevron {
+  color: #b98;
+  font-size: 11px;
+}
+
+.avoid-list {
+  padding: 0 14px 12px;
+}
+
+.avoid-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid #f7f0ee;
+  font-size: 13px;
+}
+
+.avoid-row .avoid-name {
+  font-family: Georgia, serif;
+}
+
+.avoid-row .avoid-reason {
+  font-family: monospace;
+  font-size: 11px;
+  color: #a86;
+  white-space: nowrap;
+}
+
+.avoid-note {
+  font-size: 11px;
+  color: #c98;
+  padding: 8px 14px 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 620px) {
+  .stat-cluster {
+    gap: 9px;
+  }
+  .stat-label {
+    display: none;
+  }
+  .continent-tag.ml-tag {
+    display: block;
+    margin-left: 0;
+  }
+}
