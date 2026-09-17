@@ -14,6 +14,31 @@ html, body {
 body {
   font-family: ui-sans-serif, system-ui, sans-serif;
   color: #000000;
+  animation: page-fade-in 0.32s ease both;
+}
+
+@keyframes page-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+body.page-fade-out {
+  animation: page-fade-out 0.2s ease both;
+}
+
+@keyframes page-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    animation: none;
+  }
+  body.page-fade-out {
+    animation: none;
+    opacity: 1;
+  }
 }
 
 @keyframes bl-spin {
