@@ -47,7 +47,11 @@ function getBucketCountrySet() {
     const raw = localStorage.getItem(BUCKET_STORAGE_KEY);
     if (!raw) return new Set();
     const parsed = JSON.parse(raw);
-    return new Set(Object.keys(parsed));
+    // index.html persists { countries: {...}, groups: {...} }. Older data
+    // (or a wiped/legacy save) may just be a flat { CountryName: {...} }
+    // map instead — support both shapes.
+    const countries = parsed && (parsed.countries || parsed.groups) ? (parsed.countries || {}) : (parsed || {});
+    return new Set(Object.keys(countries));
   } catch (e) {
     return new Set();
   }
