@@ -304,7 +304,6 @@ function BucketList() {
   const [toast, setToast] = useState("");
   const toastTimer = useRef(null);
   const [lightbox, setLightbox] = useState(null); // { title, caption, url }
-  const [showInfo, setShowInfo] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -1147,57 +1146,25 @@ function BucketList() {
             paddingBottom: "1.25rem",
           }}
         >
-          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
-            <h1 style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400, fontSize: 30, letterSpacing: "-0.02em", margin: 0, color: THEME.fg }}>
-              Bucket List
-            </h1>
-            <button
-              onClick={() => setShowInfo((v) => !v)}
-              aria-label={showInfo ? "Hide category legend" : "Show category legend"}
-              title="Category legend"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 18,
-                height: 18,
-                borderRadius: "50%",
-                border: `1px solid ${THEME.border}`,
-                background: THEME.bg,
-                color: THEME.fg,
-                fontFamily: "Georgia, serif",
-                fontStyle: "italic",
-                fontSize: 11,
-                lineHeight: 1,
-                padding: 0,
-                cursor: "pointer",
-                flexShrink: 0,
-              }}
-            >
-              i
-            </button>
-          </div>
-          {showInfo && (
-            <div
-              style={{
-                fontSize: 11,
-                color: THEME.muted,
-                lineHeight: 1.6,
-                border: `1px solid ${THEME.borderMuted}`,
-                background: THEME.groupBg,
-                padding: "10px 12px",
-              }}
-            >
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-                {CATEGORIES.map((c) => (
-                  <div key={c.key} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <span style={{ width: 10, height: 10, borderRadius: "50%", background: c.color, display: "inline-block" }} />
-                    <span>{c.label}</span>
-                  </div>
-                ))}
+          <h1 style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400, fontSize: 30, letterSpacing: "-0.02em", margin: "0 0 10px", color: THEME.fg }}>
+            Bucket List
+          </h1>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 12,
+              fontSize: 11,
+              color: THEME.muted,
+            }}
+          >
+            {CATEGORIES.map((c) => (
+              <div key={c.key} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: c.color, display: "inline-block" }} />
+                <span>{c.label}</span>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
         </header>
 
         <section style={{ marginBottom: "1.75rem" }}>
@@ -1369,8 +1336,8 @@ function BucketList() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 16 }}>
               <p style={{ fontSize: 11, color: THEME.mutedLight, margin: 0, flex: 1 }}>
                 {manageMode
-                  ? "This is the underlying dataset of groupings — rename a group, add or remove any country (whether or not it's on your list yet), delete groups you don't want, or add new ones. Your edits are saved and used everywhere in this view. A country can belong to more than one group if you decide that's realistic (e.g. Bulgaria bordering both the Balkans and Romania) — its score will count in each group it's part of, and any overlap is flagged with a small \"+N\" badge. Nothing is added to more than one group automatically."
-                  : "Countries you'd visit on the same trip are grouped using an editable dataset of regions/trips. Open a group below to add or remove countries you're tracking — its score is the sum of theirs."}
+                  ? "Edit the group dataset: rename, delete, or add any country to a group, on or off your list. A country can belong to multiple groups (e.g. Bulgaria in both Balkans and Romania) — its score counts in each; overlaps show a \"+N\" badge."
+                  : "Countries are grouped by trip/region. Open a group to add or remove countries you're tracking — its score is the sum of its members'."}
               </p>
               <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                 {manageMode && (
