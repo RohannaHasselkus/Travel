@@ -66,7 +66,7 @@ function getRows() {
   return rows.map(r => ({ ...r, onBucketList: bucketSet.has(r.name) }));
 }
 
-let state = { search:'', continent:'All', sortKey:'safety', sortDir:'desc', hideAdvisory:false, bucketOnly:false };
+let state = { search:'', continent:'All', sortKey:'safety', sortDir:'desc', hideAdvisory:false, bucketOnly:false, showInfo:false };
 
 function fmt(n) { return n == null ? null : Math.round(n); }
 
@@ -98,8 +98,26 @@ function render() {
   root.innerHTML = '';
   const wrap = el('div', {class:'wrap'});
 
-  wrap.appendChild(el('h1', {}, "Safest & Most Ethical Countries"));
-  wrap.appendChild(el('div', {class:'asof'}, "Snapshot: Sep 2026 · GPI + Women, Peace & Security Index + US/UK/ES advisories → Safety · Freedom House → Ethics"));
+  const titleRow = el('div', {class:'title-row'},
+    el('h1', {}, "Safest & Most Ethical Countries"),
+    el('button', {
+      class: 'info-btn',
+      'aria-label': state.showInfo ? 'Hide methodology' : 'Show methodology',
+      title: 'Where these numbers come from',
+      onclick: () => { state.showInfo = !state.showInfo; render(); }
+    }, 'i')
+  );
+  wrap.appendChild(titleRow);
+
+  if (state.showInfo) {
+    wrap.appendChild(el('div', {class:'info-panel'},
+      el('div', {}, "Snapshot: Sep 2026 · GPI + Women, Peace & Security Index + US/UK/ES advisories → Safety · Freedom House → Ethics"),
+      el('div', {style:'margin-top:6px;'},
+        "Safety = Global Peace Index + Women, Peace & Security Index (women's safety/inclusion/justice) − advisory penalties (US/UK/Spain). Ethics = Freedom House score. Sorted by Safety by default. Safety/ethics data lives in data.js — edit it to update this page. The ★ column reflects your actual Bucket List app data (read from this browser's local storage) — add or remove countries on index.html, not here."
+      )
+    ));
+  }
+
   wrap.appendChild(el('div', {class:'subnav'}, el('a', {href:'ultimate.html'}, "→ View my bucket list & safety chart"), " · ", el('a', {href:'index.html'}, "→ Edit my bucket list")));
 
   let rows = getRows();
@@ -196,10 +214,6 @@ function render() {
   });
   table.appendChild(tbody);
   wrap.appendChild(table);
-
-  wrap.appendChild(el('div', {class:'footnote'},
-    "Safety = Global Peace Index + Women, Peace & Security Index (women's safety/inclusion/justice) − advisory penalties (US/UK/Spain). Ethics = Freedom House score. Sorted by Safety by default. Safety/ethics data lives in data.js — edit it to update this page. The ★ column reflects your actual Bucket List app data (read from this browser's local storage) — add or remove countries on index.html, not here."
-  ));
 
   root.appendChild(wrap);
 }
