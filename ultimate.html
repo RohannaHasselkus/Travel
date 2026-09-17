@@ -4,104 +4,16 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>My Travel Bucket List — Final Ranking</title>
-<style>
-  html, body { margin:0; padding:0; background:#fff; }
-  * { box-sizing: border-box; }
-  body { font-family: ui-sans-serif, system-ui, sans-serif; color:#111; }
-  .wrap { max-width: 860px; margin: 0 auto; padding: 2rem 1.1rem 3rem; }
-  h1 { font-family: Georgia, 'Times New Roman', serif; font-weight:400; font-size: 30px; letter-spacing:-0.02em; margin:0 0 4px; }
-  .asof { font-size:11.5px; color:#999; margin-bottom:10px; line-height:1.5; }
-  .nav { font-size:12.5px; margin-bottom:20px; display:flex; gap:16px; }
-  .nav a { color:#111; text-decoration:none; border-bottom:1px solid #111; }
-  .nav a:hover { opacity:0.6; }
-
-  .controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:14px; padding:12px 0; border-top:1px solid #eee; border-bottom:1px solid #eee; }
-  input[type=text] { flex:1 1 180px; padding:8px 10px; border:1px solid #ccc; font-size:14px; font-family:inherit; outline:none; }
-  .sort-group { display:flex; border:1px solid #111; }
-  .sort-group button { padding:8px 11px; font-size:12px; border:none; background:#fff; cursor:pointer; border-left:1px solid #111; white-space:nowrap; }
-  .sort-group button:first-child { border-left:none; }
-  .sort-group button.active { background:#111; color:#fff; }
-  .checkbox-label { display:flex; align-items:center; gap:6px; font-size:12px; color:#555; cursor:pointer; white-space:nowrap; }
-
-  .view-row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:14px; }
-  .view-hint { font-size:11px; color:#aaa; flex:1 1 220px; }
-
-  .weights { display:flex; flex-wrap:wrap; gap:22px; margin-bottom:22px; padding:14px 14px; background:#fafafa; border:1px solid #eee; }
-  .weight-item { display:flex; flex-direction:column; gap:5px; flex:1 1 220px; min-width:200px; }
-  .weight-label-row { display:flex; justify-content:space-between; align-items:baseline; font-size:11.5px; }
-  .weight-label { text-transform:uppercase; letter-spacing:0.05em; color:#555; }
-  .weight-value { font-family:monospace; color:#111; }
-  .weight-item input[type=range] { width:100%; accent-color:#111; }
-  .weight-hint { font-size:10.5px; color:#aaa; line-height:1.4; }
-
-  .tier-section { margin-bottom: 28px; }
-  .tier-head { display:flex; align-items:center; gap:8px; border-bottom:2px solid #111; padding-bottom:7px; margin-bottom:2px; }
-  .tier-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-  .tier-title { font-family: Georgia, serif; font-size:15px; text-transform:uppercase; letter-spacing:0.06em; }
-  .tier-count { margin-left:auto; font-size:11.5px; color:#999; font-family: monospace; }
-
-  .row { border-bottom:1px solid #eee; }
-  .row-head { display:flex; align-items:center; gap:10px; padding:11px 0; cursor:pointer; }
-  .rank { font-family: monospace; font-size:12px; color:#bbb; width:18px; flex-shrink:0; }
-  .chevron { flex-shrink:0; color:#888; font-size:11px; width:10px; }
-  .row-main { flex:1; min-width:0; }
-  .row-title-line { display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; }
-  .country-name { font-family: Georgia, serif; font-size:16.5px; }
-  .group-name { font-style: italic; }
-  .continent-tag { font-size:10px; color:#999; margin-left:6px; }
-  .group-tag { font-size:10px; color:#999; margin-left:6px; font-family: monospace; }
-  .stat-cluster { display:flex; align-items:center; gap:14px; flex-shrink:0; }
-  .stat { display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
-  .stat-label { font-size:9px; text-transform:uppercase; letter-spacing:0.05em; color:#aaa; }
-  .stat-value { font-family: monospace; font-size:13px; }
-  .interest-badge { font-family: monospace; font-size:15px; font-weight:700; background:#111; color:#fff; padding:2px 8px; border-radius:2px; min-width:28px; text-align:center; }
-  .mini-bar { height:5px; width:36px; background:#eee; margin-top:2px; }
-  .mini-bar > div { height:100%; background:#999; }
-  .places-count { font-size:11px; color:#999; margin-top:3px; }
-  .na { color:#ccc; }
-  .penalty-tag { font-size:9.5px; color:#b8860b; font-family:monospace; }
-
-  .landmarks { padding: 2px 0 14px 28px; }
-  .landmark-row { display:flex; align-items:center; gap:9px; padding:5px 0; border-bottom:1px solid #f5f5f5; font-size:13.5px; }
-  .landmark-row.visited { opacity:0.4; text-decoration: line-through; }
-  .cat-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; border:1px solid #ddd; }
-  .landmark-name { flex:1; }
-  .rating-dots { display:flex; gap:2px; flex-shrink:0; }
-  .rating-dots span { width:9px; height:9px; border:1px solid #111; }
-  .rating-dots span.on { background:#111; }
-  .no-landmarks { font-size:12.5px; color:#bbb; font-style:italic; padding:6px 0 12px; }
-  .edit-hint { font-size:11px; color:#bbb; padding-bottom:6px; }
-
-  .group-body { padding: 4px 0 12px 28px; }
-  .group-members-head { font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:#aaa; padding:6px 0; }
-  .group-members { border:1px solid #eee; }
-  .group-members .row { border-bottom:1px solid #f2f2f2; }
-  .group-members .row:last-child { border-bottom:none; }
-  .group-members .row-head { padding:9px 8px; }
-
-  .avoid-section { margin-top: 36px; border:1px solid #eee; }
-  .avoid-toggle { display:flex; align-items:center; gap:8px; padding:12px 14px; cursor:pointer; background:#fdfaf9; }
-  .avoid-toggle .tier-dot { background:#c0392b; }
-  .avoid-toggle .avoid-title { font-family: Georgia, serif; font-size:13.5px; text-transform:uppercase; letter-spacing:0.06em; color:#7a2a22; }
-  .avoid-toggle .avoid-count { margin-left:auto; font-size:11.5px; color:#b98; font-family:monospace; }
-  .avoid-toggle .avoid-chevron { color:#b98; font-size:11px; }
-  .avoid-list { padding: 0 14px 12px; }
-  .avoid-row { display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px solid #f7f0ee; font-size:13px; }
-  .avoid-row .avoid-name { font-family: Georgia, serif; }
-  .avoid-row .avoid-reason { font-family:monospace; font-size:11px; color:#a86; white-space:nowrap; }
-  .avoid-note { font-size:11px; color:#c98; padding:8px 14px 12px; line-height:1.5; }
-
-  .empty { text-align:center; color:#999; padding:2.5rem 0; font-size:13.5px; }
-  .footnote { font-size:10.5px; color:#aaa; margin-top:24px; line-height:1.6; }
-
-  @media (max-width: 620px) {
-    .stat-cluster { gap:9px; }
-    .stat-label { display:none; }
-    .continent-tag { display:block; margin-left:0; }
-  }
-</style>
+<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+
+  <nav class="main-nav">
+    <a href="index.html">Raw Ranking</a>
+    <a href="safety.html">Safety</a>
+    <a href="ultimate.html" aria-current="page">Final Ranking</a>
+  </nav>
+
 <div id="root"></div>
 <script src="data.js"></script>
 <script>
@@ -172,6 +84,7 @@ let state = {
   view: "countries",        // 'countries' | 'grouped'
   expanded: {},
   avoidOpen: false,
+  showInfo: false,
   ethicsWeight: window.DEFAULT_ETHICS_WEIGHT,
   safetyWeight: window.DEFAULT_SAFETY_WEIGHT,
 };
@@ -348,8 +261,8 @@ function renderRow(row, idx) {
     el('div', { class: 'row-main' },
       el('div', { class: 'row-title-line' },
         el('div', {},
-          el('span', { class: 'country-name' }, row.name),
-          el('span', { class: 'continent-tag' }, row.continent)
+          el('span', { class: 'entry-name' }, row.name),
+          el('span', { class: 'continent-tag ml-tag' }, row.continent)
         ),
         renderStatCluster(row)
       ),
@@ -378,7 +291,7 @@ function renderGroupRow(row, idx) {
     el('div', { class: 'row-main' },
       el('div', { class: 'row-title-line' },
         el('div', {},
-          el('span', { class: 'country-name group-name' }, row.name),
+          el('span', { class: 'entry-name group-name' }, row.name),
           el('span', { class: 'group-tag' }, `${row.members.length} ${row.members.length === 1 ? 'country' : 'countries'} · avg`)
         ),
         renderStatCluster(row)
@@ -434,7 +347,7 @@ function renderAvoidSection(avoidEntries) {
       });
     section.appendChild(list);
     section.appendChild(el('div', { class: 'avoid-note' },
-      `These fall below the major-risk cutoff (safety < ${window.MAJOR_RISK_CUTOFF}) and are kept out of the ranked list entirely — no interest or ethics score buys them back in. For groups, this uses the group's average safety across its members. Adjust MAJOR_RISK_CUTOFF in data.js if you want to move that line.`
+      `Below safety ${window.MAJOR_RISK_CUTOFF} — excluded from ranking regardless of interest or ethics. Click the i above to see how the cutoff works.`
     ));
   }
   return section;
@@ -445,22 +358,42 @@ function render() {
   root.innerHTML = '';
   const wrap = el('div', { class: 'wrap' });
 
-  wrap.appendChild(el('h1', {}, "Final Ranking"));
-  wrap.appendChild(el('div', { class: 'asof' },
-    "Countries come from what you've added on the Raw Ranking page. Major-risk countries are set aside below; everything else is ranked by interest, scaled up or down by safety and ethics using the sliders below."
-  ));
-  wrap.appendChild(el('div', { class: 'nav' },
-    el('a', { href: 'index.html' }, '← Raw Ranking'),
-    el('a', { href: 'safety.html' }, 'Safety & Ethics Table')
-  ));
+  const titleRow = el('div', { class: 'title-row' },
+    el('h1', {}, "Final Ranking"),
+    el('button', {
+      class: 'info-btn',
+      'aria-label': state.showInfo ? 'Hide methodology' : 'Show methodology',
+      title: 'How this ranking works',
+      onclick: () => { state.showInfo = !state.showInfo; render(); }
+    }, 'i')
+  );
+  wrap.appendChild(titleRow);
 
-  const controls = el('div', { class: 'controls' });
+  if (state.showInfo) {
+    wrap.appendChild(el('div', { class: 'info-panel' },
+      el('div', {}, "Countries come from what you've added on the Raw Ranking page. Interest = sum of your 1–5 ratings for unvisited places (summed across a group's countries in Grouped view)."),
+      el('div', { style: 'margin-top:6px;' },
+        `Ethics is a soft %-of-score bonus or malus centered on a neutral midpoint (Freedom House 50), capped by the ethics slider — great culture can outweigh a middling score, and it never excludes a country outright.`
+      ),
+      el('div', { style: 'margin-top:6px;' },
+        `Risk is a %-of-score cut that only applies in the "slight risk" band (safety ${window.MAJOR_RISK_CUTOFF}–${window.SAFE_THRESHOLD}), scaling up as safety drops, capped by the risk slider; above ${window.SAFE_THRESHOLD} there's no penalty. Below ${window.MAJOR_RISK_CUTOFF} ("major risk") a country — or, in Grouped view, a group whose average safety falls below it — is excluded outright, no matter how high its interest or ethics score is.`
+      ),
+      el('div', { style: 'margin-top:6px;' },
+        `"Blended" sorts by interest × (1 + ethics %) × (1 − risk %); the other sort buttons rank by a single raw stat instead. Grouped view mirrors Raw Ranking's trip groupings: safety/ethics are averaged across a group's countries, while the desirability score sums each country's own score.`
+      ),
+      el('div', { style: 'margin-top:6px;' },
+        "This page updates automatically when you add or rate places on the Raw Ranking page."
+      )
+    ));
+  }
+
+  const controls = el('div', { class: 'controls panel-controls' });
   controls.appendChild(el('input', {
     type: 'text', placeholder: 'Search your countries...', value: state.search,
     oninput: e => { state.search = e.target.value; render(); }
   }));
 
-  const sortGroup = el('div', { class: 'sort-group' });
+  const sortGroup = el('div', { class: 'toggle-group' });
   [
     { key: 'blended', label: 'Blended' },
     { key: 'interest', label: 'By Interest' },
@@ -485,7 +418,7 @@ function render() {
 
   // ---- view toggle: Countries vs Grouped ----
   const viewRow = el('div', { class: 'view-row' });
-  const viewGroup = el('div', { class: 'sort-group' });
+  const viewGroup = el('div', { class: 'toggle-group' });
   [
     { key: 'countries', label: 'Countries' },
     { key: 'grouped', label: 'Grouped' },
@@ -496,11 +429,6 @@ function render() {
     }, v.label));
   });
   viewRow.appendChild(viewGroup);
-  viewRow.appendChild(el('div', { class: 'view-hint' },
-    state.view === 'grouped'
-      ? "Groups use the same trip groupings as Raw Ranking's Grouped view. Safety & ethics are averaged across a group's countries; the desirability score is the sum of their individual scores."
-      : "Every tracked country ranked on its own."
-  ));
   wrap.appendChild(viewRow);
 
   // ---- weight sliders ----
@@ -514,8 +442,7 @@ function render() {
       type: 'range', min: '0', max: '40', step: '1', value: String(state.ethicsWeight),
       oninput: e => { state.ethicsWeight = parseFloat(e.target.value); render(); },
       onchange: () => saveWeights(),
-    }),
-    el('div', { class: 'weight-hint' }, "How much a great or troubling ethics score can scale a country's own interest score up or down. It's a percentage of that score, not a flat number of points — so a country you're genuinely excited about can survive a mediocre ethics score, while it hurts a country you're only lukewarm on a lot more. Ethics never excludes a country outright, no matter how bad.")
+    })
   ));
   weights.appendChild(el('div', { class: 'weight-item' },
     el('div', { class: 'weight-label-row' },
@@ -526,8 +453,7 @@ function render() {
       type: 'range', min: '0', max: '40', step: '1', value: String(state.safetyWeight),
       oninput: e => { state.safetyWeight = parseFloat(e.target.value); render(); },
       onchange: () => saveWeights(),
-    }),
-    el('div', { class: 'weight-hint' }, `Max % of a country's interest score to cut for "slight risk" (safety between ${window.MAJOR_RISK_CUTOFF}–${window.SAFE_THRESHOLD}). Fades to 0% once safety clears ${window.SAFE_THRESHOLD}. Major risk below ${window.MAJOR_RISK_CUTOFF} is excluded outright, not just penalized — no score buys it back in.`)
+    })
   ));
   wrap.appendChild(weights);
 
@@ -588,10 +514,6 @@ function render() {
   if (avoidEntries.length > 0) {
     wrap.appendChild(renderAvoidSection(avoidEntries));
   }
-
-  wrap.appendChild(el('div', { class: 'footnote' },
-    `Scoring: interest = sum of your 1–5 ratings for unvisited places (summed across a group's countries in Grouped view). Ethics adjustment is a soft %-of-score bonus/malus centered on a neutral midpoint (Freedom House 50), capped by the ethics slider — great culture can outweigh a middling score, and it never excludes a country outright. Risk penalty is also a %-of-score cut, applying only between safety ${window.MAJOR_RISK_CUTOFF}–${window.SAFE_THRESHOLD} (slight risk), scaling up as safety drops, capped by the risk slider; above ${window.SAFE_THRESHOLD} there's no penalty at all. Below ${window.MAJOR_RISK_CUTOFF} (major risk) a country — or, in Grouped view, a group whose average safety falls below it — is excluded outright. "Blended" sorts by interest × (1 + ethics %) × (1 − risk %); the other sort buttons rank by a single raw stat instead. Grouped view mirrors Raw Ranking's trip groupings: safety/ethics are averaged across a group's countries, while the desirability score sums each country's own score. This page updates automatically when you add or rate places on the Raw Ranking page.`
-  ));
 
   root.appendChild(wrap);
 }
