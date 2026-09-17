@@ -4,51 +4,16 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Safest & Most Ethical Countries to Visit</title>
-<style>
-  html, body { margin:0; padding:0; background:#fff; }
-  * { box-sizing: border-box; }
-  body { font-family: ui-sans-serif, system-ui, sans-serif; color:#111; }
-  .wrap { max-width: 900px; margin: 0 auto; padding: 2rem 1.1rem 3rem; }
-  h1 { font-family: Georgia, 'Times New Roman', serif; font-weight:400; font-size: 30px; letter-spacing:-0.02em; margin:0 0 4px; }
-  .asof { font-size:11px; color:#999; margin-bottom:10px; }
-  .nav { font-size:12.5px; margin-bottom:16px; }
-  .nav a { color:#111; text-decoration:none; border-bottom:1px solid #111; }
-  .nav a:hover { opacity:0.6; }
-  .controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:14px; }
-  input[type=text] { flex:1 1 180px; padding:8px 10px; border:1px solid #ccc; font-size:14px; font-family:inherit; }
-  select { padding:8px 10px; border:1px solid #ccc; font-size:13px; font-family:inherit; background:#fff; }
-  .toggle-group { display:flex; border:1px solid #111; }
-  .toggle-group button { padding:8px 11px; font-size:12px; border:none; background:#fff; cursor:pointer; border-left:1px solid #111; white-space:nowrap; }
-  .toggle-group button:first-child { border-left:none; }
-  .toggle-group button.active { background:#111; color:#fff; }
-  table { width:100%; border-collapse: collapse; font-size:13.5px; }
-  th, td { text-align:left; padding:7px 5px; border-bottom:1px solid #eee; }
-  th { font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em; color:#666; cursor:pointer; user-select:none; border-bottom:2px solid #111; white-space:nowrap; }
-  th.active { color:#111; }
-  th .arrow { font-size:9px; }
-  tr:hover td { background:#fafafa; }
-  .country-name { font-weight:600; }
-  .continent-tag { font-size:9.5px; color:#999; }
-  .score-bar-wrap { display:flex; align-items:center; gap:5px; }
-  .score-bar { height:6px; width:44px; background:#eee; position:relative; flex-shrink:0; }
-  .score-bar > div { height:100%; background:#111; }
-  .flag { display:inline-block; font-size:9.5px; padding:1px 4px; border-radius:2px; margin-right:2px; margin-bottom:2px; border:1px solid; white-space:nowrap; }
-  .flag.severe { background:#c0392b; border-color:#c0392b; color:#fff; }
-  .flag.mid { background:#fff8e6; border-color:#b8860b; color:#8a6300; }
-  .na { color:#bbb; }
-  .rank-num { font-family: monospace; color:#999; font-size:11px; }
-  .bucket-star { font-size:15px; color:#ddd; margin-left:6px; user-select:none; cursor:default; }
-  .bucket-star.on { color:#c9a227; }
-  .empty { text-align:center; color:#999; padding:2rem 0; }
-  .footnote { font-size:10.5px; color:#aaa; margin-top:20px; line-height:1.5; }
-  .warn-banner { font-size:11.5px; color:#8a6300; background:#fff8e6; border:1px solid #f0d98c; padding:8px 10px; margin-bottom:14px; }
-  @media (max-width: 640px) {
-    th, td { padding:5px 3px; font-size:11.5px; }
-    .score-bar { width:30px; }
-  }
-</style>
+<link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+
+  <nav class="main-nav">
+    <a href="index.html">Raw Ranking</a>
+    <a href="safety.html" aria-current="page">Safety</a>
+    <a href="ultimate.html">Final Ranking</a>
+  </nav>
+
 <div id="root"></div>
 <script src="data.js"></script>
 <script>
@@ -131,7 +96,7 @@ function render() {
 
   wrap.appendChild(el('h1', {}, "Safest & Most Ethical Countries"));
   wrap.appendChild(el('div', {class:'asof'}, "Snapshot: Sep 2026 · GPI + Women, Peace & Security Index + US/UK/ES advisories → Safety · Freedom House → Ethics"));
-  wrap.appendChild(el('div', {class:'nav'}, el('a', {href:'ultimate.html'}, "→ View my bucket list & safety chart"), " · ", el('a', {href:'index.html'}, "→ Edit my bucket list")));
+  wrap.appendChild(el('div', {class:'subnav'}, el('a', {href:'ultimate.html'}, "→ View my bucket list & safety chart"), " · ", el('a', {href:'index.html'}, "→ Edit my bucket list")));
 
   let rows = getRows();
 
