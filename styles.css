@@ -1,3 +1,6 @@
+/* ---------------------------------------------------------------------
+   Base reset
+--------------------------------------------------------------------- */
 html, body {
   margin: 0;
   padding: 0;
@@ -8,6 +11,11 @@ html, body {
   box-sizing: border-box;
 }
 
+body {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  color: #000000;
+}
+
 @keyframes bl-spin {
   to { transform: rotate(360deg); }
 }
@@ -16,8 +24,9 @@ html, body {
   animation: bl-spin 1s linear infinite;
 }
 
-/* --- Site nav ------------------------------------------------------- */
-
+/* ---------------------------------------------------------------------
+   Site nav (shared across index.html, safety.html, ultimate.html)
+--------------------------------------------------------------------- */
 .main-nav {
   display: flex;
   justify-content: center;
@@ -52,4 +61,252 @@ html, body {
 .main-nav a[aria-current="page"] {
   background: #000000;
   color: #ffffff;
+}
+
+/* ---------------------------------------------------------------------
+   Page wrap + typography (Safety page and similar data pages)
+--------------------------------------------------------------------- */
+.wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.1rem 3rem;
+}
+
+h1 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  font-size: 30px;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px;
+  color: #000000;
+}
+
+.asof {
+  font-size: 11px;
+  color: #888888;
+  margin-bottom: 10px;
+}
+
+/* Secondary, in-page links (e.g. "view bucket list" / "edit bucket list"
+   under the h1) — distinct from .main-nav, which is the site-wide tab bar. */
+.subnav {
+  font-size: 12.5px;
+  margin-bottom: 16px;
+  color: #555555;
+}
+
+.subnav a {
+  color: #000000;
+  text-decoration: none;
+  border-bottom: 1px solid #000000;
+}
+
+.subnav a:hover {
+  opacity: 0.6;
+}
+
+/* ---------------------------------------------------------------------
+   Controls: search, select, segmented toggles
+--------------------------------------------------------------------- */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+input[type="text"] {
+  flex: 1 1 180px;
+  padding: 8px 10px;
+  border: 1px solid #cccccc;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  background: #ffffff;
+  color: #000000;
+}
+
+select {
+  padding: 8px 10px;
+  border: 1px solid #cccccc;
+  font-size: 13px;
+  font-family: inherit;
+  background: #ffffff;
+  color: #000000;
+}
+
+.toggle-group {
+  display: flex;
+  border: 1px solid #000000;
+}
+
+.toggle-group button {
+  padding: 8px 11px;
+  font-size: 12px;
+  border: none;
+  background: #ffffff;
+  cursor: pointer;
+  border-left: 1px solid #000000;
+  white-space: nowrap;
+  font-family: inherit;
+  color: #000000;
+}
+
+.toggle-group button:first-child {
+  border-left: none;
+}
+
+.toggle-group button.active {
+  background: #000000;
+  color: #ffffff;
+}
+
+.toggle-group button:hover:not(.active) {
+  background: #f2f2f2;
+}
+
+/* ---------------------------------------------------------------------
+   Data table
+--------------------------------------------------------------------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+th, td {
+  text-align: left;
+  padding: 7px 5px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+th {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #555555;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 2px solid #000000;
+  white-space: nowrap;
+}
+
+th.active {
+  color: #000000;
+}
+
+th .arrow {
+  font-size: 9px;
+}
+
+tr:hover td {
+  background: #fafafa;
+}
+
+.country-name {
+  font-weight: 600;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.continent-tag {
+  font-size: 9.5px;
+  color: #888888;
+}
+
+.score-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: monospace;
+}
+
+.score-bar {
+  height: 6px;
+  width: 44px;
+  background: #eeeeee;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.score-bar > div {
+  height: 100%;
+  background: #000000;
+}
+
+.flag {
+  display: inline-block;
+  font-size: 9.5px;
+  padding: 1px 4px;
+  border-radius: 2px;
+  margin-right: 2px;
+  margin-bottom: 2px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.flag.severe {
+  background: #c0392b;
+  border-color: #c0392b;
+  color: #ffffff;
+}
+
+.flag.mid {
+  background: #fff8e6;
+  border-color: #b8860b;
+  color: #8a6300;
+}
+
+.na {
+  color: #bbbbbb;
+}
+
+.rank-num {
+  font-family: monospace;
+  color: #888888;
+  font-size: 11px;
+}
+
+.bucket-star {
+  font-size: 15px;
+  color: #dddddd;
+  margin-left: 6px;
+  user-select: none;
+  cursor: default;
+}
+
+.bucket-star.on {
+  color: #c9a227;
+}
+
+.empty {
+  text-align: center;
+  color: #888888;
+  padding: 2rem 0;
+}
+
+.footnote {
+  font-size: 10.5px;
+  color: #aaaaaa;
+  margin-top: 20px;
+  line-height: 1.5;
+}
+
+.warn-banner {
+  font-size: 11.5px;
+  color: #8a6300;
+  background: #fff8e6;
+  border: 1px solid #f0d98c;
+  padding: 8px 10px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 640px) {
+  th, td {
+    padding: 5px 3px;
+    font-size: 11.5px;
+  }
+  .score-bar {
+    width: 30px;
+  }
 }
