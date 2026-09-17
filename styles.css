@@ -81,10 +81,48 @@ h1 {
   color: #000000;
 }
 
-.asof {
+.title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.title-row h1 {
+  margin: 0;
+}
+
+.info-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid #000000;
+  background: #ffffff;
+  color: #000000;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
   font-size: 11px;
-  color: #888888;
-  margin-bottom: 10px;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.info-btn:hover {
+  background: #f2f2f2;
+}
+
+.info-panel {
+  font-size: 11px;
+  color: #555555;
+  line-height: 1.6;
+  border: 1px solid #dddddd;
+  background: #fafafa;
+  padding: 10px 12px;
+  margin-bottom: 14px;
 }
 
 /* Secondary, in-page links (e.g. "view bucket list" / "edit bucket list"
@@ -283,13 +321,6 @@ tr:hover td {
   text-align: center;
   color: #888888;
   padding: 2rem 0;
-}
-
-.footnote {
-  font-size: 10.5px;
-  color: #aaaaaa;
-  margin-top: 20px;
-  line-height: 1.5;
 }
 
 .warn-banner {
