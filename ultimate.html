@@ -348,7 +348,7 @@ function renderAvoidSection(avoidEntries) {
       });
     section.appendChild(list);
     section.appendChild(el('div', { class: 'avoid-note' },
-      `Below safety ${window.MAJOR_RISK_CUTOFF} — excluded from ranking regardless of interest or ethics. Click the i above to see how the cutoff works.`
+      `Below safety ${window.MAJOR_RISK_CUTOFF} — excluded regardless of interest or ethics. See the i above for the formula.`
     ));
   }
   return section;
@@ -372,18 +372,18 @@ function render() {
 
   if (state.showInfo) {
     wrap.appendChild(el('div', { class: 'info-panel' },
-      el('div', {}, "Countries come from what you've added on the Raw Ranking page. Interest = sum of your 1–5 ratings for unvisited places (summed across a group's countries in Grouped view)."),
+      el('div', {}, "Interest = Σ(1–5 ratings) over unvisited places. Grouped view sums this across a group's countries."),
       el('div', { style: 'margin-top:6px;' },
-        `Ethics is a soft %-of-score bonus or malus centered on a neutral midpoint (Freedom House 50), capped by the ethics slider — great culture can outweigh a middling score, and it never excludes a country outright.`
+        `Ethics % = (Freedom House − 50) / 50 × ethics weight. FH runs 0–100; 50 is neutral. Purely a bonus/malus on score — never excludes a country.`
       ),
       el('div', { style: 'margin-top:6px;' },
-        `Risk is a %-of-score cut that only applies in the "slight risk" band (safety ${window.MAJOR_RISK_CUTOFF}–${window.SAFE_THRESHOLD}), scaling up as safety drops, capped by the risk slider; above ${window.SAFE_THRESHOLD} there's no penalty. Below ${window.MAJOR_RISK_CUTOFF} ("major risk") a country — or, in Grouped view, a group whose average safety falls below it — is excluded outright, no matter how high its interest or ethics score is.`
+        `Risk % = (${window.SAFE_THRESHOLD} − safety) / (${window.SAFE_THRESHOLD} − ${window.MAJOR_RISK_CUTOFF}) × risk weight, for safety in [${window.MAJOR_RISK_CUTOFF}, ${window.SAFE_THRESHOLD}). 0% at safety ≥ ${window.SAFE_THRESHOLD}. Safety < ${window.MAJOR_RISK_CUTOFF} moves a country to Avoid, excluded outright regardless of interest or ethics. Unrated safety is treated as no penalty.`
       ),
       el('div', { style: 'margin-top:6px;' },
-        `"Blended" sorts by interest × (1 + ethics %) × (1 − risk %); the other sort buttons rank by a single raw stat instead. Grouped view mirrors Raw Ranking's trip groupings: safety/ethics are averaged across a group's countries, while the desirability score sums each country's own score.`
+        `Blended score = interest × (1 + ethics %) × (1 − risk %). The other sort buttons rank by one raw stat instead. In Grouped view, safety/ethics are the average across a group's countries; interest is their sum.`
       ),
       el('div', { style: 'margin-top:6px;' },
-        "This page updates automatically when you add or rate places on the Raw Ranking page."
+        "Weights above are tunable per-session and saved. Updates live as you edit the Raw Ranking page."
       )
     ));
   }
